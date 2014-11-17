@@ -5,16 +5,12 @@
 ;;;;;;;;;;;
 
 (define (^const? x)
-	(or 	(^boolean? x)
-			(^char? x)
-			(^number? x)
-			(^string? x)
+	(or 	(boolean? x)
+			(char? x)
+			(number? x)
+			(string? x)
 			(^quote? x)))
 
-(define (^boolean? x) )			;TODO
-(define (^char? x))				;TODO
-(define (^number? x))			;TODO
-(define (^string? x))			;TODO
 (define (^quote? x))			;TODO
 
 (define (^var? x))				;TODO
