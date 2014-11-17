@@ -1,4 +1,4 @@
-(load "")
+(load "compiler.scm")
 (import
 	(rnrs)
 	(rough-draft unit-test)
@@ -7,13 +7,7 @@
 (define-test-suite foo
 
 	(define-test test-<lines>-1
-		(assert-equal? (<lines> (string->list "---") (lambda (x y) (list->string x)) (lambda(x) 'fail)) "---")
-		(assert-equal? (<lines> (string->list "---") (lambda (x y) (list->string y)) (lambda(x) 'fail)) "")
-	)
-
-	(define-test test-<lines-nat-lines>-1
-		(assert-equal? (<lines-nat-lines> (string->list "---5-") (lambda (x y)  x) (lambda(x) 'fail)) 5)
-		(assert-equal? (<lines-nat-lines> (string->list "---5-") (lambda (x y)  (list->string y)) (lambda(x) 'fail)) "")
+		(assert-equal? 1 1)
 	)
 
 )
