@@ -18,25 +18,3 @@
 
 
 (exit (run-test-suites foo))
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<string>
