@@ -7,7 +7,7 @@
 (define-test-suite foo
 
 	(define-test test-<lines>-1
-		(assert-equal? 1 1)
+		(assert-equal? (parse '(lambda (x y z) (if x y z))) '(lambda-simple (x y z) (if3 (var x) (var y) (var z))))
 	)
 
 )
