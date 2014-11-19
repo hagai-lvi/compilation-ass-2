@@ -63,6 +63,12 @@
 ; ;;;;;;;;;
 ; (define (^seq? x))				;TODO
 
+(define *void-object* (void))
+
+(define (^reg-lambda-args-list? list)
+	(if (not (list? list))
+	    #f
+	    (andmap ^var? list)))
 
 (define (^reg-lambda-args-list? list) ; TODO exclude lists that contain the symbol . (dot)
 	(if (not (list? list))
@@ -73,7 +79,7 @@
   (let ((run
 	 (compose-patterns
 	  (pattern-rule
-	   `(,(? 'c ^const?))
+	   (? 'c ^const?)
 	   (lambda (c) `(const ,c)))
 	  (pattern-rule
 	   `(quote ,(? 'c))
@@ -99,6 +105,10 @@
 	  (pattern-rule
 	  `(lambda ,(? 'arg-list ^reg-lambda-args-list?) ,(? 'body))
 	  (lambda (arg-list body) `(lambda-simple ,arg-list ,(parse body))))
+	   (pattern-rule
+	   `(define ,(? 'var) ,(? 'ex) )
+	   (lambda (var ex)
+	     `(define ,(parse var) ,(parse ex))))
 	  )))
     (lambda (e)
       (run e
