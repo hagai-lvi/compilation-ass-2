@@ -64,6 +64,11 @@
 ; (define (^seq? x))				;TODO
 
 
+(define (^reg-lambda-args-list? list)
+	(if (not (list? list))
+	    #f
+	    (andmap ^var? list)))
+
 (define parse
   (let ((run
 	 (compose-patterns
@@ -84,21 +89,12 @@
 	   `(if ,(? 'test) ,(? 'dit) ,(? 'dif))
 	   (lambda (test dit dif)
 	     `(if3 ,(parse test) ,(parse dit) ,(parse dif))))
+	  (pattern-rule
+	  `(lambda ,(? 'arg-list ^reg-lambda-args-list?) ,(? 'body))
+	  (lambda (arg-list body) `(lambda-simple ,arg-list ,(parse body))))
 	  )))
     (lambda (e)
       (run e
 	   (lambda ()
 	     (error 'parse
 		    (format "I can't recognize this: ~s" e)))))))
-
-(define (^reg-lambda-args-list? list)
-	(if (not (list? list))
-	    #f
-	    (andmap ^var? list)))
-
-(define (reg-lambda x)
-	(match 	`(lambda ,(? 'arg-list ^reg-lambda-args-list?) ,(? 'body))
-			x
-			(lambda (arg-list body) `(lambda-simple ,arg-list ,(parse body)))
-			(lambda() 'fail)
-	))
