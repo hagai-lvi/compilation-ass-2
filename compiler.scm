@@ -12,8 +12,8 @@
 			))
 
 (define (^var? x)
-(let ((p (member x *reserved-words*)))
-	(if p #f #t)))
+(and (symbol? x)(let ((p (member x *reserved-words*)))
+	(if p #f #t))))
 
 (define *reserved-words*
   '(and begin cond define do else if lambda
@@ -21,9 +21,6 @@
     unquote-splicing quote set!))			;TODO
 
 
-(define (contains? l i)
-  (if (empty? l) #f
-      (or (eq? (first l) i) (contains? (rest l) i))))
 ;;;;;;;;;;;;;;;;;;
 ;; conditionals ;;
 ;;;;;;;;;;;;;;;;;;
@@ -79,6 +76,14 @@
 		(pattern-rule
 	   `,(? 'v ^var?)
 	   (lambda (v) `(var ,v)))
+		  (pattern-rule
+	   `(if ,(? 'test) ,(? 'dit))
+	   (lambda (test dit)
+	     `(if3 ,(parse test) ,(parse dit) (const ,*void-object*))))
+	  (pattern-rule
+	   `(if ,(? 'test) ,(? 'dit) ,(? 'dif))
+	   (lambda (test dit dif)
+	     `(if3 ,(parse test) ,(parse dit) ,(parse dif))))
 	  )))
     (lambda (e)
       (run e
