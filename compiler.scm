@@ -64,7 +64,7 @@
 ; (define (^seq? x))				;TODO
 
 
-(define (^reg-lambda-args-list? list)
+(define (^reg-lambda-args-list? list) ; TODO exclude lists that contain the symbol . (dot)
 	(if (not (list? list))
 	    #f
 	    (andmap ^var? list)))
@@ -89,6 +89,13 @@
 	   `(if ,(? 'test) ,(? 'dit) ,(? 'dif))
 	   (lambda (test dit dif)
 	     `(if3 ,(parse test) ,(parse dit) ,(parse dif))))
+	  (pattern-rule
+	  `(lambda ,(? 'opt-arg-list ^opt-lambda-args-list?) ,(? 'body))
+	  (lambda (opt-arg-list body)
+	  		(let ( 	(mandatory-args (get-mandatory-args opt-arg-list))
+	  				(optional-arg (get-optional-args opt-arg-list)))
+	  			`(lambda-opt ,mandatory-args ,optional-arg ,(parse `(begin e1 ... em)))))	
+	  )
 	  (pattern-rule
 	  `(lambda ,(? 'arg-list ^reg-lambda-args-list?) ,(? 'body))
 	  (lambda (arg-list body) `(lambda-simple ,arg-list ,(parse body))))
