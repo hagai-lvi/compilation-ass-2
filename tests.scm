@@ -7,7 +7,7 @@
 (define-test-suite foo
 
 	(define-test test-<lines>-1
-		(assert-equal? 1 1)
+		(assert-equal? (reg-lambda '(lambda (x) a)) '(lambda-simple (x) (var a)))
 	)
 
 )
