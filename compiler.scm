@@ -94,7 +94,7 @@
 (define (^reg-lambda-args-list? list)
 	(if (not (list? list))
 	    #f
-	    (andmap var? list)))
+	    (andmap ^var? list)))
 
 (define (^lambda-body? body) #t)		;TODO
 
