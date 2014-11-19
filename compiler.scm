@@ -65,6 +65,11 @@
 
 (define *void-object* (void))
 
+(define (^reg-lambda-args-list? list)
+	(if (not (list? list))
+	    #f
+	    (andmap ^var? list)))
+
 (define parse
   (let ((run
 	 (compose-patterns
@@ -86,6 +91,9 @@
 	   (lambda (test dit dif)
 	     `(if3 ,(parse test) ,(parse dit) ,(parse dif))))
 	  (pattern-rule
+	  `(lambda ,(? 'arg-list ^reg-lambda-args-list?) ,(? 'body))
+	  (lambda (arg-list body) `(lambda-simple ,arg-list ,(parse body))))
+	   (pattern-rule
 	   `(define ,(? 'var) ,(? 'ex) )
 	   (lambda (var ex)
 	     `(define ,(parse var) ,(parse ex))))
@@ -95,4 +103,3 @@
 	   (lambda ()
 	     (error 'parse
 		    (format "I can't recognize this: ~s" e)))))))
-;TES
