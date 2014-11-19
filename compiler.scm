@@ -11,7 +11,8 @@
 			(string? x)
 			(^quote? x)))
 
-(define (^quote? x))			;TODO
+(define (^quote? x)
+	(and (list? x)(eq? 'quote (car x))))
 
 (define (^var? x))				;TODO
 
