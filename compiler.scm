@@ -63,12 +63,13 @@
 ; ;;;;;;;;;
 ; (define (^seq? x))				;TODO
 
+(define *void-object* (void))
 
 (define parse
   (let ((run
 	 (compose-patterns
 	  (pattern-rule
-	   `(,(? 'c ^const?))
+	   (? 'c ^const?)
 	   (lambda (c) `(const ,c)))
 	  (pattern-rule
 	   `(quote ,(? 'c))
@@ -84,6 +85,10 @@
 	   `(if ,(? 'test) ,(? 'dit) ,(? 'dif))
 	   (lambda (test dit dif)
 	     `(if3 ,(parse test) ,(parse dit) ,(parse dif))))
+	  (pattern-rule
+	   `(define ,(? 'var) ,(? 'ex) )
+	   (lambda (var ex)
+	     `(define ,(parse var) ,(parse ex))))
 	  )))
     (lambda (e)
       (run e
