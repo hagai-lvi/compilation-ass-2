@@ -96,10 +96,8 @@
 	    #f
 	    (andmap ^var? list)))
 
-(define (^lambda-body? body) #t)		;TODO
-
 (define (reg-lambda x)
-	(match 	`(lambda ,(? 'arg-list ^reg-lambda-args-list?) ,(? 'body ^lambda-body?))
+	(match 	`(lambda ,(? 'arg-list ^reg-lambda-args-list?) ,(? 'body))
 			x
 			(lambda (arg-list body) `(lambda-simple ,arg-list ,(parse body)))
 			(lambda() 'fail)
