@@ -18,50 +18,7 @@
 (define *reserved-words*
   '(and begin cond define do else if lambda
     let let* letrec or quasiquote unquote 
-    unquote-splicing quote set!))			;TODO
-
-
-;;;;;;;;;;;;;;;;;;
-;; conditionals ;;
-;;;;;;;;;;;;;;;;;;
-; (define (^conditional? x)
-; 	(or 	(^if2? x)
-; 			(^if3? x)))
-
-; ;(define (^if2? x))				;TODO
-; ;(define (^if3? x))				;TODO
-
-; ;;;;;;;;;;;;
-; ;; lambda ;;
-; ;;;;;;;;;;;;
-; (define (^lambda? x)
-; 	(or 	(^reg-lambda? x)
-; 			(^lambda-opt? x)
-; 			(^lambda-variadic? x)))
-; ;
-; ;(define (^reg-lambda? x))		;TODO
-; ;(define (^lambda-opt? x))		;TODO
-; ;(define (^lambda-variadic? x))	;TODO
-
-; ;;;;;;;;;;;;
-; ;; define ;;
-; ;;;;;;;;;;;;
-; (define (^define? x)
-; 	(or 	(^define-regular? x)
-; 			(^define-mit? x)))
-
-; (define (^define-regular? x))	;TODO
-; (define (^define-mit? x))		;TODO
-
-; ;;;;;;;;;;;;;;;;;
-; ;; application ;;
-; ;;;;;;;;;;;;;;;;;
-; (define (^application? x))		;TODO
-
-; ;;;;;;;;;
-; ;; seq ;;
-; ;;;;;;;;;
-; (define (^seq? x))				;TODO
+    unquote-splicing quote set!))
 
 (define *void-object* (void))
 
@@ -70,7 +27,7 @@
 	    #f
 	    (andmap ^var? list)))
 
-(define (^reg-lambda-args-list? list) ; TODO exclude lists that contain the symbol . (dot)
+(define (^reg-lambda-args-list? list)
 	(if (not (list? list))
 	    #f
 	    (andmap ^var? list)))
@@ -82,10 +39,12 @@
 	    (opt-lambda-args-list (cdr args-list) (lambda (partial-args-list) 
 	    (succ (cons (cons (car args-list) (car partial-args-list)) (cdr partial-args-list)))))))
 
-
 (define (improper-list? x) ;TODO add tests
 	(and 	(pair? x)
 			(not (null? (cdr (last-pair x))))))
+
+(define (get-opt-lambda-mandatory-args x) (car x))
+(define (get-opt-lambda-optional-args x) (cdr x))
 
 (define parse
   (let ((run
@@ -99,23 +58,23 @@
 		(pattern-rule
 	   `,(? 'v ^var?)
 	   (lambda (v) `(var ,v)))
-		  (pattern-rule
+		(pattern-rule 	;if3
 	   `(if ,(? 'test) ,(? 'dit))
 	   (lambda (test dit)
 	     `(if3 ,(parse test) ,(parse dit) (const ,*void-object*))))
-	  (pattern-rule
+	  (pattern-rule 	;if2
 	   `(if ,(? 'test) ,(? 'dit) ,(? 'dif))
 	   (lambda (test dit dif)
 	     `(if3 ,(parse test) ,(parse dit) ,(parse dif))))
-	  (pattern-rule
+	  (pattern-rule 	;opt-lambda
 	  `(lambda ,(? 'opt-arg-list improper-list?) ,(? 'body))
 	  (lambda (opt-arg-list body)
 	  		(let* ( 	(args-list (opt-lambda-args-list opt-arg-list (lambda (x) x)))
-	  					(mandatory-args (car args-list))
-	  					(optional-arg (cdr args-list)))
+	  					(mandatory-args (get-opt-lambda-mandatory-args args-list))
+	  					(optional-arg (get-opt-lambda-optional-args args-list)))
 	  			`(lambda-opt ,mandatory-args ,optional-arg ,(parse body))))	
 	  )
-	  (pattern-rule
+	  (pattern-rule 	;reg-lambda
 	  `(lambda ,(? 'arg-list ^reg-lambda-args-list?) ,(? 'body))
 	  (lambda (arg-list body) `(lambda-simple ,arg-list ,(parse body))))
 	   (pattern-rule
