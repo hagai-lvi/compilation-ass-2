@@ -21,6 +21,11 @@
 		(assert-true (improper-list? '(a b c . d)))
 	)
 
+	(define-test opt-lambda-args-list-test-1
+		(assert-equal? (car (opt-lambda-args-list `(1 2 3 . 4 ) (lambda (x) x) )) `(1 2 3) )
+		(assert-equal? (cdr (opt-lambda-args-list `(1 2 3 . 4 ) (lambda (x) x) )) 4 )
+	)
+
 )
 
 ;(run-test-suites foo)
