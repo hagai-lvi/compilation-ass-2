@@ -108,11 +108,12 @@
 	   (lambda (test dit dif)
 	     `(if3 ,(parse test) ,(parse dit) ,(parse dif))))
 	  (pattern-rule
-	  `(lambda ,(? 'opt-arg-list ^opt-lambda-args-list?) ,(? 'body))
+	  `(lambda ,(? 'opt-arg-list improper-list?) ,(? 'body))
 	  (lambda (opt-arg-list body)
-	  		(let ( 	(mandatory-args (get-mandatory-args opt-arg-list))
-	  				(optional-arg (get-optional-args opt-arg-list)))
-	  			`(lambda-opt ,mandatory-args ,optional-arg ,(parse `(begin e1 ... em)))))	
+	  		(let* ( 	(args-list (opt-lambda-args-list opt-arg-list (lambda (x) x)))
+	  					(mandatory-args (car args-list))
+	  					(optional-arg (cdr args-list)))
+	  			`(lambda-opt ,mandatory-args ,optional-arg ,(parse body))))	
 	  )
 	  (pattern-rule
 	  `(lambda ,(? 'arg-list ^reg-lambda-args-list?) ,(? 'body))
