@@ -12,9 +12,20 @@
 
 )
 
+(define-test-suite opt-lambda-tests
+
+	(define-test improper-list?-test-1
+		(assert-false (improper-list? '(1 2 3)))
+		(assert-false (improper-list? 'a))
+		(assert-true (improper-list? '(1 2 3 . 4)))
+		(assert-true (improper-list? '(a b c . d)))
+	)
+
+)
+
 ;(run-test-suites foo)
 ;(run-test foo first-test)
 ;(run-tests foo test-one)
 
 
-(exit (run-test-suites foo))
+(exit (+ (run-test-suites foo opt-lambda-tests)))
