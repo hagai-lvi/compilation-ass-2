@@ -65,7 +65,7 @@
 
 (define *void-object* (void))
 
-(define (^reg-lambda-args-list? list)
+(define (^opt-lambda-args-list? list)
 	(if (not (list? list))
 	    #f
 	    (andmap ^var? list)))
@@ -74,6 +74,18 @@
 	(if (not (list? list))
 	    #f
 	    (andmap ^var? list)))
+
+;splits the improper list to a pair of proper list and single argument: (opt-lambda-args-list '(a b c . d)) returns '((a b c) . d)
+(define (opt-lambda-args-list args-list succ)
+	(if (not (pair? args-list))
+	    (succ (cons '() args-list))
+	    (opt-lambda-args-list (cdr args-list) (lambda (partial-args-list) 
+	    (succ (cons (cons (car args-list) (car partial-args-list)) (cdr partial-args-list)))))))
+
+
+(define (improper-list? x) ;TODO add tests
+	(and 	(pair? x)
+			(not (null? (cdr (last-pair x))))))
 
 (define parse
   (let ((run
