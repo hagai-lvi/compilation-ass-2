@@ -82,9 +82,33 @@
 			`(define ,(? 'var) ,(? 'ex) )
 			(lambda (var ex)
 				`(define ,(parse var) ,(parse ex))))
+		;(pattern-rule 	;let*
+		;	`(let* ,(? let-vars-expressions-list?) ,(? 'body))
+		;	(lambda (exp-list body)
+		;		))
 		)))
 	(lambda (e)
 		(run e
 			(lambda ()
 				(error 'parse
 				(format "I can't recognize this: ~s" e)))))))
+
+(define (letstar exp-list body)
+	(if (= (length exp-list) 0)
+	    body ; TODO add the tags and parse
+	    (let*( 	(seperated-exp-list (seperate-last-element exp-list))
+				(last (cdr seperated-exp-list))
+				(rest (car seperated-exp-list)))
+		;(letstar rest `((lambda (,(car last) ,body)) ,(cadr last)))
+		(letstar rest `((lambda (,(car last)) ,body ) ,(cadr last)))
+	)))
+
+; return a pair that contain the head of the list and the last element of the list
+; example: (seperate-last-element '(1 2 3 4) returns '((1 2 3) . 4)
+(define (seperate-last-element list)
+	(letrec ((f (lambda (list succ)
+					(if (null? (cdr list))
+					    (succ `() (car list))
+					    (f (cdr list) (lambda (rest last)
+					    					(succ (cons (car list) rest) last)))))))
+	(f list (lambda (x y) (cons x y)))))
