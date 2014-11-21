@@ -34,6 +34,7 @@
 	    #f
 	    (andmap ^var? list)))
 
+
 ;splits the improper list to a pair of proper list and single argument: (opt-lambda-args-list '(a b c . d)) returns '((a b c) . d)
 (define (opt-lambda-args-list args-list succ)
 	(if (not (pair? args-list))
@@ -53,6 +54,7 @@
 	(andmap (lambda (x)
 				(and (list? x) (^var? (car x))))
 			list))
+
 
 (define parse
 	(let ((run
@@ -84,11 +86,20 @@
 		(pattern-rule 	;reg-lambda
 			`(lambda ,(? 'arg-list ^reg-lambda-args-list?) ,(? 'body))
 			(lambda (arg-list body) `(lambda-simple ,arg-list ,(parse body))))
-		(pattern-rule
-			`(define ,(? 'var) ,(? 'ex) )
-			(lambda (var ex)
-				`(define ,(parse var) ,(parse ex))))
-		(pattern-rule 	;let*
+
+	   (pattern-rule
+	   `(define ,(? 'var ^var?) ,(? 'ex) )
+	   (lambda (vari ex)
+	     `(define (var ,vari) ,(parse ex))))
+	  (pattern-rule
+	   `(,(? 'va  ^var? ^var?) . ,(? 'varb list?))
+	   (lambda(vari variables)
+	     `(applic (var ,vari) ,(map (lambda(s)(parse s)) variables ))))
+	  (pattern-rule
+	   `(,(? 'va list?) . ,(? 'va2 list?))
+	   (lambda(first rest)
+	     `(applic ,(parse first) ,(map (lambda(exp)(parse exp)) rest))))
+	  (pattern-rule 	;let*
 			`(let* ,(? let-vars-expressions-list?) ,(? 'body))
 			(lambda (exp-list body)
 				(parse (letstar exp-list body))))
