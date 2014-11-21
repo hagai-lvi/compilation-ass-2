@@ -75,6 +75,11 @@
 	    #f
 	    (andmap ^var? list)))
 
+(define parse-s (lambda (rest)
+	(if (null? rest)
+		'()
+		(parse rest))))
+
 (define parse
   (let ((run
 	 (compose-patterns
@@ -99,12 +104,22 @@
 	  `(lambda ,(? 'arg-list ^reg-lambda-args-list?) ,(? 'body))
 	  (lambda (arg-list body) `(lambda-simple ,arg-list ,(parse body))))
 	   (pattern-rule
-	   `(define ,(? 'var) ,(? 'ex) )
-	   (lambda (var ex)
-	     `(define ,(parse var) ,(parse ex))))
-	  )))
+	   `(define ,(? 'var ^var?) ,(? 'ex) )
+	   (lambda (vari ex)
+	     `(define (var ,vari) ,(parse ex))))
+	  (pattern-rule
+	   `(,(? 'va  ^var? ^var?) . ,(? 'varb list?))
+	   (trace-lambda whatiss(vari variables)
+	     `(applic (var ,vari) ,(map (lambda(s)(parse s)) variables ))))
+	  (pattern-rule
+	   `(,(? 'va list?) . ,(? 'va2 list?))
+	   (trace-lambda whatis(first rest)
+	     `(applic ,(parse first) ,(map (lambda(exp)(parse exp)) rest))))
+	 )))
     (lambda (e)
       (run e
 	   (lambda ()
 	     (error 'parse
 		    (format "I can't recognize this: ~s" e)))))))
+
+
