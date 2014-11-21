@@ -4,6 +4,8 @@
 ;; const ;;
 ;;;;;;;;;;;
 
+; TODO: add 'begin' to the parsing of lambdas bodies
+
 (define (^const? x)
 	(or 	(boolean? x)
 			(char? x)
@@ -47,43 +49,42 @@
 (define (get-opt-lambda-optional-args x) (cdr x))
 
 (define parse
-  (let ((run
-	 (compose-patterns
-	  (pattern-rule
-	   (? 'c ^const?)
-	   (lambda (c) `(const ,c)))
-	  (pattern-rule
-	   `(quote ,(? 'c))
-	   (lambda (c) `(const ,c)))
+	(let ((run
+		(compose-patterns
 		(pattern-rule
-	   `,(? 'v ^var?)
-	   (lambda (v) `(var ,v)))
+			(? 'c ^const?)
+			(lambda (c) `(const ,c)))
+		(pattern-rule
+			`(quote ,(? 'c))
+			(lambda (c) `(const ,c)))
+		(pattern-rule
+			`,(? 'v ^var?)
+			(lambda (v) `(var ,v)))
 		(pattern-rule 	;if3
-	   `(if ,(? 'test) ,(? 'dit))
-	   (lambda (test dit)
-	     `(if3 ,(parse test) ,(parse dit) (const ,*void-object*))))
-	  (pattern-rule 	;if2
-	   `(if ,(? 'test) ,(? 'dit) ,(? 'dif))
-	   (lambda (test dit dif)
-	     `(if3 ,(parse test) ,(parse dit) ,(parse dif))))
-	  (pattern-rule 	;opt-lambda
-	  `(lambda ,(? 'opt-arg-list improper-list?) ,(? 'body))
-	  (lambda (opt-arg-list body)
-	  		(let* ( 	(args-list (opt-lambda-args-list opt-arg-list (lambda (x) x)))
-	  					(mandatory-args (get-opt-lambda-mandatory-args args-list))
-	  					(optional-arg (get-opt-lambda-optional-args args-list)))
-	  			`(lambda-opt ,mandatory-args ,optional-arg ,(parse body))))	
-	  )
-	  (pattern-rule 	;reg-lambda
-	  `(lambda ,(? 'arg-list ^reg-lambda-args-list?) ,(? 'body))
-	  (lambda (arg-list body) `(lambda-simple ,arg-list ,(parse body))))
-	   (pattern-rule
-	   `(define ,(? 'var) ,(? 'ex) )
-	   (lambda (var ex)
-	     `(define ,(parse var) ,(parse ex))))
-	  )))
-    (lambda (e)
-      (run e
-	   (lambda ()
-	     (error 'parse
-		    (format "I can't recognize this: ~s" e)))))))
+			`(if ,(? 'test) ,(? 'dit))
+			(lambda (test dit)
+				`(if3 ,(parse test) ,(parse dit) (const ,*void-object*))))
+		(pattern-rule 	;if2
+			`(if ,(? 'test) ,(? 'dit) ,(? 'dif))
+			(lambda (test dit dif)
+				`(if3 ,(parse test) ,(parse dit) ,(parse dif))))
+		(pattern-rule 	;opt-lambda
+			`(lambda ,(? 'opt-arg-list improper-list?) ,(? 'body))
+			(lambda (opt-arg-list body)
+				(let* ( 	(args-list (opt-lambda-args-list opt-arg-list (lambda (x) x)))
+							(mandatory-args (get-opt-lambda-mandatory-args args-list))
+							(optional-arg (get-opt-lambda-optional-args args-list)))
+					`(lambda-opt ,mandatory-args ,optional-arg ,(parse body)))))
+		(pattern-rule 	;reg-lambda
+			`(lambda ,(? 'arg-list ^reg-lambda-args-list?) ,(? 'body))
+			(lambda (arg-list body) `(lambda-simple ,arg-list ,(parse body))))
+		(pattern-rule
+			`(define ,(? 'var) ,(? 'ex) )
+			(lambda (var ex)
+				`(define ,(parse var) ,(parse ex))))
+		)))
+	(lambda (e)
+		(run e
+			(lambda ()
+				(error 'parse
+				(format "I can't recognize this: ~s" e)))))))
