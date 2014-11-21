@@ -101,11 +101,10 @@
 
 (define (letstar exp-list body)
 	(if (= (length exp-list) 0)
-	    body ; TODO add the tags and parse
+	    body
 	    (let*( 	(seperated-exp-list (seperate-last-element exp-list))
 				(last (cdr seperated-exp-list))
 				(rest (car seperated-exp-list)))
-		;(letstar rest `((lambda (,(car last) ,body)) ,(cadr last)))
 		(letstar rest `((lambda (,(car last)) ,body ) ,(cadr last)))
 	)))
 
