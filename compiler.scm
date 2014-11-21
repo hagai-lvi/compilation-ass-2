@@ -48,6 +48,12 @@
 (define (get-opt-lambda-mandatory-args x) (car x))
 (define (get-opt-lambda-optional-args x) (cdr x))
 
+
+(define (let-vars-expressions-list? list) 	;TODO think what are the criterions for a let-vars-expressions-list
+	(andmap (lambda (x)
+				(and (list? x) (^var? (car x))))
+			list))
+
 (define parse
 	(let ((run
 		(compose-patterns
@@ -82,10 +88,10 @@
 			`(define ,(? 'var) ,(? 'ex) )
 			(lambda (var ex)
 				`(define ,(parse var) ,(parse ex))))
-		;(pattern-rule 	;let*
-		;	`(let* ,(? let-vars-expressions-list?) ,(? 'body))
-		;	(lambda (exp-list body)
-		;		))
+		(pattern-rule 	;let*
+			`(let* ,(? let-vars-expressions-list?) ,(? 'body))
+			(lambda (exp-list body)
+				(parse (letstar exp-list body))))
 		)))
 	(lambda (e)
 		(run e
