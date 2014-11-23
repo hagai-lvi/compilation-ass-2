@@ -91,6 +91,14 @@
 	   `(define ,(? 'var ^var?) ,(? 'ex) )
 	   (lambda (vari ex)
 	     `(define (var ,vari) ,(parse ex))))
+	  	(pattern-rule
+	  	`(define (,(? 'name) . ,(? 'varb)) ,(? 'exp))
+	  	(trace-lambda define(first rest exp)
+	  		`(define (var ,first) ,(parse `(lambda ,rest ,exp)))))
+	  (pattern-rule
+	  	`(define (,(? 'name) . ,(? 'varb)) ,(? 'exp))
+	  	(trace-lambda define(first rest exp)
+	  		`(define (var ,first) ,(parse `(lambda ,rest ,exp)))))
 	  (pattern-rule
 	   `(,(? 'va  ^var? ^var?) . ,(? 'varb list?))
 	   (lambda(vari variables)
