@@ -126,6 +126,12 @@
 				(rest (car seperated-exp-list)))
 		(letstar rest `((lambda (,(car last)) ,body ) ,(cadr last)))
 	)))
+;;;;;;;;;;;;;;;;;;
+;;; HAGAI-TODO ;;;
+;;; cond
+;;; lambda-variadic ;;;
+;;; letrec
+;;;;;;;;;;;;;;;;;;
 
 ; return a pair that contain the head of the list and the last element of the list
 ; example: (seperate-last-element '(1 2 3 4) returns '((1 2 3) . 4)
