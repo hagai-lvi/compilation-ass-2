@@ -55,6 +55,17 @@
 				(and (list? x) (^var? (car x))))
 			list))
 
+(define (get-lambda-variables vars)
+	(if (=(length vars)0)
+		'()
+		(cons (caar vars) (get-lambda-variables (cdr vars)))))
+
+
+(define (get-lambda-arguments exp)
+	(if (=(length exp)0)
+		'()
+		(cons (cadar exp) (get-lambda-arguments (cdr exp)))))
+
 
 (define parse
 	(let ((run
@@ -107,6 +118,11 @@
 	   `(,(? 'va list?) . ,(? 'va2 list?))
 	   (lambda(first rest)
 	     `(applic ,(parse first) ,(map (lambda(exp)(parse exp)) rest))))
+	  (pattern-rule
+	   `(let ,(? 'va ) ,(? 'body))
+	   (lambda(vars body)
+	     (parse  `((lambda ,(get-lambda-variables vars) ,body) ,@(get-lambda-arguments vars)))))
+	  
 	  (pattern-rule 	;let*
 			`(let* ,(? let-vars-expressions-list?) ,(? 'body))
 			(lambda (exp-list body)
