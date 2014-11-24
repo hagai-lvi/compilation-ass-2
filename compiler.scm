@@ -55,6 +55,17 @@
 				(and (list? x) (^var? (car x))))
 			list))
 
+(define (get-lambda-variables vars)
+	(if (=(length vars)0)
+		'()
+		(cons (caar vars) (get-lambda-variables (cdr vars)))))
+
+
+(define (get-lambda-arguments exp)
+	(if (=(length exp)0)
+		'()
+		(cons (cadar exp) (get-lambda-arguments (cdr exp)))))
+
 
 (define parse
 	(let ((run
@@ -100,17 +111,35 @@
 	  	(trace-lambda define(first rest exp)
 	  		`(define (var ,first) ,(parse `(lambda ,rest ,exp)))))
 	  (pattern-rule
-	   `(,(? 'va  ^var? ^var?) . ,(? 'varb list?))
+	   `(,(? 'va  ^var?) . ,(? 'varb list?))
 	   (lambda(vari variables)
 	     `(applic (var ,vari) ,(map (lambda(s)(parse s)) variables ))))
 	  (pattern-rule
 	   `(,(? 'va list?) . ,(? 'va2 list?))
 	   (lambda(first rest)
 	     `(applic ,(parse first) ,(map (lambda(exp)(parse exp)) rest))))
+	  (pattern-rule
+	   `(let ,(? 'va ) ,(? 'body))
+	   (lambda(vars body)
+	     (parse  `((lambda ,(get-lambda-variables vars) ,body) ,@(get-lambda-arguments vars)))))
+	  
 	  (pattern-rule 	;let*
 			`(let* ,(? let-vars-expressions-list?) ,(? 'body))
 			(lambda (exp-list body)
 				(parse (letstar exp-list body))))
+	  (pattern-rule 	;let*
+			`(and ,(? 'first) ,(? 'second))
+			(lambda (first second)
+			(parse `(if ,first ,second #f))))
+	  (pattern-rule 	;let*
+			`(and ,(? 'first) . ,(? 'rest))
+			(lambda (first rest)
+			(parse `(if ,first (and ,@rest) #f))))
+	  (pattern-rule
+	   `(let ,(? 'va ) ,(? 'body))
+	   (lambda(vars body)
+	     (parse  `((lambda ,(get-lambda-variables vars) ,body) ,@(get-lambda-arguments vars)))))
+	  
 		)))
 	(lambda (e)
 		(run e
