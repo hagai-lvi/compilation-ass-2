@@ -66,6 +66,32 @@
 		'()
 		(cons (cadar exp) (get-lambda-arguments (cdr exp)))))
 
+(define expand-qq
+  (lambda (e)
+    (cond ((unquote? e) (cadr e))
+	  ((unquote-splicing? e)
+	   (error 'expand-qq "unquote-splicing here makes no sense!"))
+	  ((pair? e)
+	   (let ((a (car e))
+		 (b (cdr e)))
+	     (cond ((unquote-splicing? a) `(append ,(cadr a) ,(expand-qq b)))
+		   ((unquote-splicing? b) `(cons ,(expand-qq a) ,(cadr b)))
+		   (else `(cons ,(expand-qq a) ,(expand-qq b))))))
+	  ((vector? e) `(list->vector ,(expand-qq (vector->list e))))
+	  ((or (null? e) (symbol? e)) `',e)
+	  (else e))))
+
+(define ^quote?
+  (lambda (tag)
+    (lambda (e)
+      (and (pair? e)
+	   (eq? (car e) tag)
+	   (pair? (cdr e))
+	   (null? (cddr e))))))
+
+(define unquote? (^quote? 'unquote))
+(define unquote-splicing? (^quote? 'unquote-splicing))
+
 
 (define parse
 	(let ((run
@@ -125,8 +151,11 @@
 	  (pattern-rule
 	   `(begin . ,(? `rest))
 	   (lambda(rest)
-	     `(seq (,(map (lambda(exp)(parse exp)) rest)))))
-	  
+	     `(seq (,(map (lambda(exp)`(\x2C;,(parse exp))) rest)))))
+	  (pattern-rule
+	   `(quasiquote . ,(? `rest))
+	   (lambda(rest)
+	     (expand-qq rest)))
 	  (pattern-rule
 	   `(let ,(? 'va ) ,(? 'body))
 	   (lambda(vars body)
