@@ -119,6 +119,11 @@
 	   (lambda(first rest)
 	     `(applic ,(parse first) ,(map (lambda(exp)(parse exp)) rest))))
 	  (pattern-rule
+	   `(begin . ,(? `rest))
+	   (lambda(rest)
+	     `(seq (,(map (lambda(exp)(parse exp)) rest)))))
+	  
+	  (pattern-rule
 	   `(let ,(? 'va ) ,(? 'body))
 	   (lambda(vars body)
 	     (parse  `((lambda ,(get-lambda-variables vars) ,body) ,@(get-lambda-arguments vars)))))
