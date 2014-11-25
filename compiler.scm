@@ -180,7 +180,10 @@
 													(succ `(if ,(caar cond-list) ,(cadar cond-list) ,rest))))))))))
 		(f cond-list (lambda (x) x))))
 
-
+(define (expand-letrec let-list body)
+	(let ( 	(firsts (map (lambda (list) (car list)) let-list))
+			(lasts (map (lambda (list) (cadr list)) let-list)))
+		`((lambda (,firsts) ,body ) ,@lasts )))
 ;;;;;;;;;;;;;;;;;;
 ;;; HAGAI-TODO ;;;
 ;;; lambda-variadic ;;;
