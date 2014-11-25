@@ -87,6 +87,10 @@
 			`(if ,(? 'test) ,(? 'dit) ,(? 'dif))
 			(lambda (test dit dif)
 				`(if3 ,(parse test) ,(parse dit) ,(parse dif))))
+		(pattern-rule 	;lambda-variadic
+			`(lambda ,(? `var ^var?) . ,(? `body))	;TODO need to check if the body is legal (also in opt and regular lambdas)
+			(lambda (args body)
+				`(lambda-variadic ,args ,@(map parse body ))))
 		(pattern-rule 	;opt-lambda
 			`(lambda ,(? 'opt-arg-list improper-list?) ,(? 'body))
 			(lambda (opt-arg-list body)
@@ -141,9 +145,8 @@
 	     (parse  `((lambda ,(get-lambda-variables vars) ,body) ,@(get-lambda-arguments vars)))))
 	  (pattern-rule
 	  	'(cond ,(? cond-list) ) ; TODO add identifier for cond list
-	  	(lambda (cond-list) (parse (expand-cond cond-list) ))
-	  	)
-	  
+		(lambda (cond-list) (parse (expand-cond cond-list) ))
+		)
 		)))
 	(lambda (e)
 		(run e
@@ -175,7 +178,6 @@
 
 ;;;;;;;;;;;;;;;;;;
 ;;; HAGAI-TODO ;;;
-;;; cond
 ;;; lambda-variadic ;;;
 ;;; letrec
 ;;;;;;;;;;;;;;;;;;
