@@ -139,6 +139,10 @@
 	   `(let ,(? 'va ) ,(? 'body))
 	   (lambda(vars body)
 	     (parse  `((lambda ,(get-lambda-variables vars) ,body) ,@(get-lambda-arguments vars)))))
+	  (pattern-rule
+	  	'(cond ,(? cond-list) ) ; TODO add identifier for cond list
+	  	(lambda (cond-list) (parse (expand-cond cond-list) ))
+	  	)
 	  
 		)))
 	(lambda (e)
@@ -155,6 +159,20 @@
 				(rest (car seperated-exp-list)))
 		(letstar rest `((lambda (,(car last)) ,body ) ,(cadr last)))
 	)))
+
+(define (expand-cond cond-list)
+	(letrec ((f (lambda (cond-list succ)
+					(cond 	((null? cond-list) (succ cond-list))
+							((and (eqv? `else (car cond-list)) (null? (cdr cond-list)) ) ('NOT-SUPPORTED-YET)) ; TODO handle else
+							((and (eqv? `else (car cond-list)) (not (null? (cdr cond-list))) ) ('NOT-SUPPORTED-YET)) ; TODO ERROR
+							(else 	(f 	(cdr cond-list)
+										(lambda (rest)
+											(if 	(null? rest)
+													(succ `(if ,(caar cond-list) ,(cadar cond-list) ))
+													(succ `(if ,(caar cond-list) ,(cadar cond-list) ,rest))))))))))
+		(f cond-list (lambda (x) x))))
+
+
 ;;;;;;;;;;;;;;;;;;
 ;;; HAGAI-TODO ;;;
 ;;; cond
