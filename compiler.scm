@@ -87,6 +87,10 @@
 			`(if ,(? 'test) ,(? 'dit) ,(? 'dif))
 			(lambda (test dit dif)
 				`(if3 ,(parse test) ,(parse dit) ,(parse dif))))
+		(pattern-rule 	;lambda-variadic
+			`(lambda ,(? `var ^var?) . ,(? `body))	;TODO need to check if the body is legal (also in opt and regular lambdas)
+			(lambda (args body)
+				`(lambda-variadic ,args ,@(map parse body ))))
 		(pattern-rule 	;opt-lambda
 			`(lambda ,(? 'opt-arg-list improper-list?) ,(? 'body))
 			(lambda (opt-arg-list body)
@@ -144,7 +148,10 @@
 	   `(let ,(? 'va ) ,(? 'body))
 	   (lambda(vars body)
 	     (parse  `((lambda ,(get-lambda-variables vars) ,body) ,@(get-lambda-arguments vars)))))
-	  
+	  (pattern-rule
+	  	'(cond ,(? cond-list) ) ; TODO add identifier for cond list
+		(lambda (cond-list) (parse (expand-cond cond-list) ))
+		)
 		)))
 	(lambda (e)
 		(run e
@@ -160,9 +167,22 @@
 				(rest (car seperated-exp-list)))
 		(letstar rest `((lambda (,(car last)) ,body ) ,(cadr last)))
 	)))
+
+(define (expand-cond cond-list)
+	(letrec ((f (lambda (cond-list succ)
+					(cond 	((null? cond-list) (succ cond-list))
+							((and (eqv? `else (caar cond-list)) (null? (cdr cond-list)) ) (succ (cadar cond-list))) ; TODO handle else
+							((and (eqv? `else (caar cond-list)) (not (null? (cdr cond-list))) ) (error `expand-cond (format "else clause must be the last in a cond expression."))) ; TODO ERROR
+							(else 	(f 	(cdr cond-list)
+										(lambda (rest)
+											(if 	(null? rest)
+													(succ `(if ,(caar cond-list) ,(cadar cond-list) ))
+													(succ `(if ,(caar cond-list) ,(cadar cond-list) ,rest))))))))))
+		(f cond-list (lambda (x) x))))
+
+
 ;;;;;;;;;;;;;;;;;;
 ;;; HAGAI-TODO ;;;
-;;; cond
 ;;; lambda-variadic ;;;
 ;;; letrec
 ;;;;;;;;;;;;;;;;;;
@@ -176,3 +196,4 @@
 					    (f (cdr list) (lambda (rest last)
 					    					(succ (cons (car list) rest) last)))))))
 	(f list (lambda (x y) (cons x y)))))
+
