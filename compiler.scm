@@ -163,8 +163,8 @@
 (define (expand-cond cond-list)
 	(letrec ((f (lambda (cond-list succ)
 					(cond 	((null? cond-list) (succ cond-list))
-							((and (eqv? `else (car cond-list)) (null? (cdr cond-list)) ) ('NOT-SUPPORTED-YET)) ; TODO handle else
-							((and (eqv? `else (car cond-list)) (not (null? (cdr cond-list))) ) ('NOT-SUPPORTED-YET)) ; TODO ERROR
+							((and (eqv? `else (caar cond-list)) (null? (cdr cond-list)) ) (succ (cadar cond-list))) ; TODO handle else
+							((and (eqv? `else (caar cond-list)) (not (null? (cdr cond-list))) ) (error `expand-cond (format "else clause must be the last in a cond expression."))) ; TODO ERROR
 							(else 	(f 	(cdr cond-list)
 										(lambda (rest)
 											(if 	(null? rest)
@@ -189,3 +189,4 @@
 					    (f (cdr list) (lambda (rest last)
 					    					(succ (cons (car list) rest) last)))))))
 	(f list (lambda (x y) (cons x y)))))
+
