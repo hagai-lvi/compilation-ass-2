@@ -1,5 +1,5 @@
 (load "pattern-matcher.scm")
-
+(define (id x) x)
 ;;;;;;;;;;;
 ;; const ;;
 ;;;;;;;;;;;
