@@ -25,6 +25,10 @@
 					      ((and (list? (car list)) (eqv? (car (car list)) sym)) (f (cdr list) (lambda (rest) (succ `(,@(cdar list) ,@rest )))))
 					      (else (f (cdr list) (lambda (rest) (succ `(,(car list) ,@rest)))))
 					  ))))
-		(f list (lambda(x) x)))
+		(f list (lambda(x) x))))
 
-	)
+(define (quotify l)
+	(if (and (list? l) (> (length l) 1))
+		`(quote (,@l))
+		l
+		))

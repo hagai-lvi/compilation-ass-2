@@ -1,4 +1,5 @@
 (load "compiler.scm")
+(load "folder.scm")
 (import
 	(rnrs)
 	(rough-draft unit-test)
@@ -34,9 +35,16 @@
 
 )
 
+(define-test-suite folder-tests
+	(define-test test-flatten
+		(assert-equal? (flatten `+ `(+ 1 2)) `(+ 1 2))
+		(assert-equal? (flatten `* `(+ 1 2)) `(+ 1 2))
+		(assert-equal? (flatten `+ `(+ 1 2 (+ 1 2) )) `(+ 1 2 1 2))
+		(assert-equal? (flatten `+ `(+ 1 2 (+ 3 4 (+ 5 6)) )) `(+ 1 2 3 4 (+ 5 6))) ; flatten onlt *one* level
+	)
+)
 ;(run-test-suites foo)
 ;(run-test general-tests test-letstar-1)
 ;(run-tests foo test-one)
 
-
-(exit (+ (run-test-suites parse-tests general-tests)))
+(exit (+ (run-test-suites parse-tests general-tests folder-tests)))
