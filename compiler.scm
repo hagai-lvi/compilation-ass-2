@@ -151,7 +151,7 @@
 	  (pattern-rule
 	   `(begin . ,(? `rest))
 	   (lambda(rest)
-	     `(seq (,(map (lambda(exp)`(\x2C;,(parse exp))) rest)))))
+	     `(seq (,(map (lambda(exp)(parse exp)) rest)))))
 	  (pattern-rule
 	   `(quasiquote . ,(? `rest))
 	   (lambda(rest)
@@ -174,7 +174,7 @@
 			(lambda (first rest)
 			(parse `(if ,first (and ,@rest) #f))))
 	  (pattern-rule
-	   `(let ,(? 'va ) ,(? 'body))
+	   `(let ,(? 'va ) . ,(? 'body))
 	   (lambda(vars body)
 	     (parse  `((lambda ,(get-lambda-variables vars) ,body) ,@(get-lambda-arguments vars)))))
 	  (pattern-rule
