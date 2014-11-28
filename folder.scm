@@ -29,6 +29,7 @@
 			(pattern-rule
 				(? 'any-exp)
 				id)
+
 		)))
 	(lambda (e)
 		(let ((exp (if 	(list? e)
@@ -55,3 +56,8 @@
 (define (part pred lst)
 	(cons 	(filter pred lst)
 			(filter (lambda (x) (not (pred x)) ) lst)))
+
+(define (count initial lst symbol)
+	(cond (	(null? lst) initial)
+			((eqv? symbol (car lst)) (count (+ initial 1) (cdr lst) symbol))
+			(else (count initial (cdr lst) symbol))))
