@@ -119,7 +119,7 @@
 		(pattern-rule 	;lambda-variadic
 			`(lambda ,(? `var ^var?) . ,(? `body))	;TODO need to check if the body is legal (also in opt and regular lambdas)
 			(lambda (args body)
-				`(lambda-variadic ,args ,@(map parse body ))))
+				`(lambda-variadic ,args ,(parse `(begin ,@body)) )))
 
 				(pattern-rule 	;opt-lambda
 			`(lambda ,(? 'opt-arg-list improper-list?) . ,(? 'body))
@@ -148,6 +148,10 @@
 	  	(trace-lambda define(first rest exp)
 	  		`(define (var ,first) ,(parse `(lambda ,rest ,exp)))))
 	   (pattern-rule
+	   `(begin)
+	   (lambda()
+	     `(const ,*void-object*)))
+	   (pattern-rule
 	   `(begin ,(? `rest))
 	   (lambda(rest)
 	     (parse rest)))
@@ -172,7 +176,11 @@
 	    (pattern-rule 	;let*
 			`(and)
 			(lambda ()
-			#t))
+			`(const #t)))
+	    (pattern-rule
+	    	`(and ,(? 'first))
+			(lambda (first)
+				(parse first)))
 	  (pattern-rule 	;let*
 			`(and ,(? 'first) ,(? 'second))
 			(lambda (first second)
