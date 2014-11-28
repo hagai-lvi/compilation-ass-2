@@ -1,4 +1,5 @@
 (load "pattern-matcher.scm")
+(print-gensym #f)
 ;;;;;;;;;;;
 ;; const ;;
 ;;;;;;;;;;;
@@ -128,8 +129,10 @@
 							(mandatory-args (get-opt-lambda-mandatory-args args-list))
 							(optional-arg (get-opt-lambda-optional-args args-list)))
 					`(lambda-opt ,mandatory-args ,optional-arg ,(parse `(begin ,@body))))))
-		
-		
+	  (pattern-rule 	;letrec
+			`(letrec ,(? let-vars-expressions-list?) . ,(? 'body))
+			(lambda (exp-list body)
+				(parse (expand-letrec `(letrec (,exp-list) ,body) ))))
 
 	(pattern-rule 	;reg-lambda
 			`(lambda ,(? 'arg-list ^reg-lambda-args-list?) . ,(? 'body))
@@ -243,10 +246,33 @@
 													(succ `(if ,(caar cond-list) ,(cadar cond-list) ,rest))))))))))
 		(f cond-list (lambda (x) x))))
 
-(define (expand-letrec let-list body)
-	(let ( 	(firsts (map (lambda (list) (car list)) let-list))
-			(lasts (map (lambda (list) (cadr list)) let-list)))
-		`((lambda (,firsts) ,body ) ,@lasts )))
+(define Ym
+  (lambda fs
+    (let ((ms (map
+		(lambda (fi)
+		  (lambda ms
+		    (apply fi (map (lambda (mi)
+				     (lambda args
+				       (apply (apply mi ms) args))) ms))))
+		fs)))
+      (apply (car ms) ms))))
+
+(define expand-letrec
+  (lambda (letrec-expr)
+    (with letrec-expr
+      (lambda (_letrec ribs . exprs)
+	(let* ((fs (map car ribs))
+	       (lambda-exprs (map cdr ribs))
+	       (nu (gensym))
+	       (nu+fs `(,nu ,@fs))
+	       (body-f `(lambda ,nu+fs ,@exprs))
+	       (hofs
+		(map (lambda (lambda-expr) `(lambda ,nu+fs ,@lambda-expr))
+		  lambda-exprs)))
+	  `(Ym ,body-f ,@hofs))))))
+
+(define with (lambda (s f)
+					(apply f s)))
 ;;;;;;;;;;;;;;;;;;
 ;;; HAGAI-TODO ;;;
 ;;; lambda-variadic ;;;
