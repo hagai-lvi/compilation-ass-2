@@ -65,6 +65,12 @@
 		(assert-equal? (flatten `+ `(+ 1 2 (+ 3 4 (+ 5 6)) )) `(+ 1 2 3 4 (+ 5 6))) ; flatten only *one* level
 	)
 
+	(define-test test-fold-plus
+		(assert-equal? (fold `(+ 1 2 (+ (+ 1 2) a b))) (+ 6 a b) )
+		(assert-equal? (fold `(+ 1 2 (+ a (+ 1 2) b))) (+ 6 a b) )
+		(assert-equal? (fold `(+ 1 2 (+ (* 10 2) a a b))) (+ 23 a a b) )
+	)
+
 
 )
 ;(run-test-suites foo)
