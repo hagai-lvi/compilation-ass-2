@@ -170,7 +170,7 @@
 		(pattern-rule 	;let*
 			`(let* ,(? let-vars-expressions-list?) . ,(? 'body))
 			(lambda (exp-list body)
-				(parse (letstar exp-list `(,@body)))))
+				(parse (letstar exp-list body))))
 		(pattern-rule 	;let*
 			`(and)
 			(lambda ()
