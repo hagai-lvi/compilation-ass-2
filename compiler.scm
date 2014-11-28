@@ -1,5 +1,6 @@
 (load "pattern-matcher.scm")
 (print-gensym #f)
+(define (id x) x)
 ;;;;;;;;;;;
 ;; const ;;
 ;;;;;;;;;;;
@@ -201,8 +202,8 @@
 				(parse  `((lambda ,(get-lambda-variables vars) ,body) ,@(get-lambda-arguments vars)))))
 		(pattern-rule
 			`(cond . ,(? 'cond-list)) ; TODO add identifier for cond list
-			(lambda (cond-list) (parse (expand-cond cond-list)))
-		))))
+			(lambda (cond-list) (parse (expand-cond cond-list))))
+	)))
 	(lambda (e)
 		(run e
 			(lambda ()
