@@ -39,7 +39,7 @@
 		(assert-equal? (flatten `+ `(+ 1 2)) `(+ 1 2))
 		(assert-equal? (flatten `* `(+ 1 2)) `(+ 1 2))
 		(assert-equal? (flatten `+ `(+ 1 2 (+ 1 2) )) `(+ 1 2 1 2))
-		(assert-equal? (flatten `+ `(+ 1 2 (+ 3 4 (+ 5 6)) )) `(+ 1 2 3 4 (+ 5 6))) ; flatten onlt *one* level
+		(assert-equal? (flatten `+ `(+ 1 2 (+ 3 4 (+ 5 6)) )) `(+ 1 2 3 4 (+ 5 6))) ; flatten only *one* level
 	)
 
 
