@@ -7,11 +7,28 @@
 			(pattern-rule
 				`(+ . ,(? `args))
 				(lambda (args)
-					(apply + args)))
-		(pattern-rule
-			(? 'exp )
-			id)
-
+					(let* (	(flat-list (flatten `+ args))
+							(part (part number? flat-list))
+							(numbers (car part))
+							(non-numbers (cdr part))
+							(sum (apply + numbers)))
+					(if	(null? non-numbers)
+						sum
+						`(+ ,sum ,@non-numbers) ))))
+			(pattern-rule
+				`(* . ,(? `args))
+				(lambda (args)
+					(let* (	(flat-list (flatten `+ args))
+							(part (part number? flat-list))
+							(numbers (car part))
+							(non-numbers (cdr part))
+							(sum (apply * numbers)))
+					(if	(null? non-numbers)
+						sum
+						`(* ,sum ,@non-numbers) ))))
+			(pattern-rule
+				(? 'any-exp)
+				id)
 		)))
 	(lambda (e)
 		(let ((exp (if 	(list? e)
@@ -36,5 +53,5 @@
 		))
 
 (define (part pred lst)
-	(cons 	(cons #t (filter pred lst))
-			(cons #f (filter (lambda (x) (not (pred x)) ) lst))))
+	(cons 	(filter pred lst)
+			(filter (lambda (x) (not (pred x)) ) lst)))
