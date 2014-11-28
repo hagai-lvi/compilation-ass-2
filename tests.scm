@@ -32,7 +32,6 @@
 	(define-test test-letstar-1
 		(assert-equal? (letstar '((a 5) (b (+ a 5))) '(+ a b) )  `((lambda (a) ((lambda (b) (+ a b)) (+ a 5))) 5))
 	)
-
 )
 
 (define-test-suite folder-tests
@@ -42,6 +41,16 @@
 		(assert-equal? (flatten `+ `(+ 1 2 (+ 1 2) )) `(+ 1 2 1 2))
 		(assert-equal? (flatten `+ `(+ 1 2 (+ 3 4 (+ 5 6)) )) `(+ 1 2 3 4 (+ 5 6))) ; flatten onlt *one* level
 	)
+
+
+	(define-test test-cond
+		(assert-equal? (parse `(cond (a b c) (d e f) (else g h))) 	`(if3 (var a)
+																     (seq ((var b) (var c)))
+																     (if3 (var d)
+																          (seq ((var e) (var f)))
+																          (seq ((var g) (var h))))))
+	)
+
 )
 ;(run-test-suites foo)
 ;(run-test general-tests test-letstar-1)
