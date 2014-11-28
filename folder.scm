@@ -5,14 +5,13 @@
 	(let ((run
 		(compose-patterns
 			(pattern-rule
-				`(+ . ,(? 'vars-list))
-				(lambda (vars-list) (apply + vars-list)))
-			(pattern-rule `(,(? 'const (trace-lambda const? (x) (^const? x) ))) (lambda (x) x))
+				`(+ . ,(? `args))
+				(lambda (args)
+					)
+			)
 		)))
 	(lambda (e)
-		(let ((exp (if 	(list? e)
-				    			(map fold e)
-				    			e)))
+		(let ()
 			(run e
 			(lambda ()
 				(error 'parse
@@ -32,3 +31,8 @@
 		`(quote (,@l))
 		l
 		))
+
+(define (part pred lst)
+	(cons 	(cons #t (filter pred lst))
+			(cons #f (filter (lambda (x) (not (pred x)) ) lst))
+	))
