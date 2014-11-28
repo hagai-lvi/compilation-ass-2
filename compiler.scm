@@ -121,94 +121,88 @@
 			`(lambda ,(? `var ^var?) . ,(? `body))	;TODO need to check if the body is legal (also in opt and regular lambdas)
 			(lambda (args body)
 				`(lambda-variadic ,args ,(parse `(begin ,@body)) )))
-
-				(pattern-rule 	;opt-lambda
+		(pattern-rule 	;opt-lambda
 			`(lambda ,(? 'opt-arg-list improper-list?) . ,(? 'body))
 			(lambda (opt-arg-list body)
 				(let* ( 	(args-list (opt-lambda-args-list opt-arg-list (lambda (x) x)))
 							(mandatory-args (get-opt-lambda-mandatory-args args-list))
 							(optional-arg (get-opt-lambda-optional-args args-list)))
 					`(lambda-opt ,mandatory-args ,optional-arg ,(parse `(begin ,@body))))))
-	  (pattern-rule 	;letrec
+		(pattern-rule 	;letrec
 			`(letrec ,(? let-vars-expressions-list?) . ,(? 'body))
 			(lambda (exp-list body)
 				(parse (expand-letrec `(letrec ,exp-list ,@body) ))))
-
-	(pattern-rule 	;reg-lambda
+		(pattern-rule 	;reg-lambda
 			`(lambda ,(? 'arg-list ^reg-lambda-args-list?) . ,(? 'body))
 			(lambda (arg-list body) `(lambda-simple ,arg-list ,(parse `(begin ,@body)))))
-
 	   (pattern-rule
-	   `(define ,(? 'var ^var?) ,(? 'ex) )
-	   (lambda (vari ex)
-	     `(define (var ,vari) ,(parse ex))))
+			`(define ,(? 'var ^var?) ,(? 'ex) )
+			(lambda (vari ex)
+				`(define (var ,vari) ,(parse ex))))
 	  	(pattern-rule
-	  	`(define (,(? 'name) . ,(? 'varb)) ,(? 'exp))
-	  	(lambda (first rest exp)
-	  		`(define (var ,first) ,(parse `(lambda ,rest ,exp)))))
-	  (pattern-rule
-	  	`(define (,(? 'name) . ,(? 'varb)) ,(? 'exp))
-	  	(lambda (first rest exp)
-	  		`(define (var ,first) ,(parse `(lambda ,rest ,exp)))))
-	   (pattern-rule
-	   `(begin)
-	   (lambda()
-	     `(const ,*void-object*)))
-	   (pattern-rule
-	   `(begin ,(? `rest))
-	   (lambda(rest)
-	     (parse rest)))
-	  (pattern-rule
-	   `(begin . ,(? `rest))
-	   (lambda(rest)
-	     `(seq ,(map (lambda(exp)(parse exp))  rest))))
-	  (pattern-rule
-	   `(,(? 'a quasiquote?) . ,(? `rest))
-	   (lambda(first rest)
-	     (expand-qq (car rest))))
-	  (pattern-rule
-	   `(let ,(? 'va ) . ,(? 'body))
-	   (lambda(vars body)
-	     (parse `((lambda ,(get-lambda-variables vars) ,@body) ,@(get-lambda-arguments vars)))))
-	  
-	  (pattern-rule 	;let*
+			`(define (,(? 'name) . ,(? 'varb)) ,(? 'exp))
+			(lambda (first rest exp)
+				`(define (var ,first) ,(parse `(lambda ,rest ,exp)))))
+		(pattern-rule
+			`(define (,(? 'name) . ,(? 'varb)) ,(? 'exp))
+			(lambda (first rest exp)
+				`(define (var ,first) ,(parse `(lambda ,rest ,exp)))))
+		(pattern-rule
+			`(begin)
+			(lambda()
+				`(const ,*void-object*)))
+		(pattern-rule
+			`(begin ,(? `rest))
+			(lambda(rest)
+				(parse rest)))
+		(pattern-rule
+			`(begin . ,(? `rest))
+			(lambda(rest)
+				`(seq ,(map (lambda(exp)(parse exp))  rest))))
+		(pattern-rule
+			`(,(? 'a quasiquote?) . ,(? `rest))
+			(lambda(first rest)
+				(expand-qq (car rest))))
+		(pattern-rule
+			`(let ,(? 'va ) . ,(? 'body))
+			(lambda(vars body)
+				(parse `((lambda ,(get-lambda-variables vars) ,@body) ,@(get-lambda-arguments vars)))))
+		(pattern-rule 	;let*
 			`(let* ,(? let-vars-expressions-list?) . ,(? 'body))
 			(lambda (exp-list body)
 				(parse (letstar exp-list `(,@body)))))
-	  
-	    (pattern-rule 	;let*
+		(pattern-rule 	;let*
 			`(and)
 			(lambda ()
 			`(const #t)))
-	    (pattern-rule
-	    	`(and ,(? 'first))
+		(pattern-rule
+			`(and ,(? 'first))
 			(lambda (first)
 				(parse first)))
-	  (pattern-rule 	;let*
+		(pattern-rule 	;let*
 			`(and ,(? 'first) ,(? 'second))
 			(lambda (first second)
-			(parse `(if ,first ,second #f))))
-	  (pattern-rule 	;let*
+				(parse `(if ,first ,second #f))))
+		(pattern-rule 	;let*
 			`(and ,(? 'first) . ,(? 'rest))
 			(lambda (first rest)
-			(parse `(if ,first (and ,@rest) #f))))
- (pattern-rule
-	   `(,(? 'va  ^var?) . ,(? 'varb list?))
-	   (lambda(vari variables)
-	     `(applic (var ,vari) ,(map (lambda(s)(parse s)) variables ))))
-	  (pattern-rule
-	   `(,(? 'va list?) . ,(? 'va2 list?))
-	   (lambda(first rest)
-	     `(applic ,(parse first) ,(map (lambda(exp)(parse exp)) rest))))
-		  (pattern-rule
-	   `(let ,(? 'va ) ,(? 'body))
-	   (lambda(vars body)
-	     (parse  `((lambda ,(get-lambda-variables vars) ,body) ,@(get-lambda-arguments vars)))))
-	  (pattern-rule
-	  	`(cond . ,(? 'cond-list)) ; TODO add identifier for cond list
-		(lambda (cond-list) (parse (expand-cond cond-list)))
-		)
-		)))
+				(parse `(if ,first (and ,@rest) #f))))
+		(pattern-rule
+			`(,(? 'va  ^var?) . ,(? 'varb list?))
+			(lambda (vari variables)
+				`(applic (var ,vari) ,(map (lambda(s)(parse s)) variables ))))
+		(pattern-rule
+			`(,(? 'va list?) . ,(? 'va2 list?))
+			(lambda (first rest)
+				`(applic ,(parse first) ,(map (lambda(exp)(parse exp)) rest))))
+		(pattern-rule
+			`(let ,(? 'va ) ,(? 'body))
+			(lambda (vars body)
+				(parse  `((lambda ,(get-lambda-variables vars) ,body) ,@(get-lambda-arguments vars)))))
+		(pattern-rule
+			`(cond . ,(? 'cond-list)) ; TODO add identifier for cond list
+			(lambda (cond-list) (parse (expand-cond cond-list)))
+		))))
 	(lambda (e)
 		(run e
 			(lambda ()
