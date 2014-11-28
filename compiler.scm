@@ -90,7 +90,7 @@
 	   (null? (cddr e))))))
 
 (define quasiquote? 
-	(trace-lambda qq(e)
+	(lambda (e)
  (eq? e 'quasiquote)))
 
 (define unquote? (^quote? 'unquote))
@@ -144,11 +144,11 @@
 	     `(define (var ,vari) ,(parse ex))))
 	  	(pattern-rule
 	  	`(define (,(? 'name) . ,(? 'varb)) ,(? 'exp))
-	  	(trace-lambda define(first rest exp)
+	  	(lambda (first rest exp)
 	  		`(define (var ,first) ,(parse `(lambda ,rest ,exp)))))
 	  (pattern-rule
 	  	`(define (,(? 'name) . ,(? 'varb)) ,(? 'exp))
-	  	(trace-lambda define(first rest exp)
+	  	(lambda (first rest exp)
 	  		`(define (var ,first) ,(parse `(lambda ,rest ,exp)))))
 	   (pattern-rule
 	   `(begin)
@@ -215,7 +215,7 @@
 				(error 'parse
 				(format "I can't recognize this: ~s" e)))))))
 
-(define letstar (trace-lambda letstar (exp-list body)
+(define letstar (lambda (exp-list body)
 	(if (= (length exp-list) 0)
 	    body
 	    (let*( 	(seperated-exp-list (seperate-last-element exp-list))
@@ -224,7 +224,7 @@
 		(letstar-new rest `((lambda (,(car last)) ,@body ) ,(cadr last)))
 	))))
 
-(define letstar-new (trace-lambda letstar (exp-list body)
+(define letstar-new (lambda (exp-list body)
 	(if (= (length exp-list) 0)
 	    body
 	    (let*( 	(seperated-exp-list (seperate-last-element exp-list))
@@ -236,14 +236,13 @@
 (define (expand-cond cond-list)
 	(letrec ((f (lambda (cond-list succ)
 					(cond 	((null? cond-list) (succ cond-list))
-							((and (eqv? `else (caar cond-list)) (null? (cdr cond-list)) ) (succ (cadar cond-list))) ; TODO handle else
+							((and (eqv? `else (caar cond-list)) (null? (cdr cond-list)) ) (succ `(begin ,@(cdar cond-list)))) ; TODO handle else
 							((and (eqv? `else (caar cond-list)) (not (null? (cdr cond-list))) ) (error `expand-cond (format "else clause must be the last in a cond expression."))) ; TODO ERROR
 							(else 	(f 	(cdr cond-list)
 										(lambda (rest)
 											(if 	(null? rest)
-							
-													(succ `(if ,(caar cond-list) ,(cadar cond-list) ))
-													(succ `(if ,(caar cond-list) ,(cadar cond-list) ,rest))))))))))
+													(succ `(if ,(caar cond-list) (begin ,@(cdar cond-list)) ))
+													(succ `(if ,(caar cond-list) (begin ,@(cdar cond-list)) ,rest))))))))))
 		(f cond-list (lambda (x) x))))
 
 (define Ym
