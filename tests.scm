@@ -29,9 +29,32 @@
 		(assert-equal? (cdr (opt-lambda-args-list `(1 2 3 . 4 ) (lambda (x) x) )) 4 )
 	)
 
-	(define-test test-letstar-1
-		(assert-equal? (letstar '((a 5) (b (+ a 5))) '(+ a b) )  `((lambda (a) ((lambda (b) (+ a b)) (+ a 5))) 5))
+	;(define-test test-letstar-1
+	;	(assert-equal? (letstar '((a 5) (b (+ a 5))) '(+ a b) )  `((lambda (a) ((lambda (b) (+ a b)) (+ a 5))) 5))
+	;)
+
+	(define-test test-cond
+		(assert-equal? (parse `(cond (a b c) (d e f) (else g h)))
+			`(if3 (var a)
+				 (seq ((var b) (var c)))
+				 (if3 (var d)
+							(seq ((var e) (var f)))
+							(seq ((var g) (var h))))))
 	)
+
+	(define-test test-letrec
+		(assert-equal? (parse '(letrec ((f1 (lambda (x) (+ 1 x))) (f2 (lambda (y) (* 1 y)))) 1))
+						`(applic
+							(var ym)
+							((lambda-simple (g1102 f1 f2) (const 1))
+								(lambda-simple
+									(g0 f1 f2)
+									(lambda-simple (x) (applic (var +) ((const 1) (var x)))))
+								(lambda-simple
+									(g0 f1 f2)
+									(lambda-simple (y) (applic (var *) ((const 1) (var y))))))))
+	)
+
 )
 
 (define-test-suite folder-tests
@@ -42,14 +65,6 @@
 		(assert-equal? (flatten `+ `(+ 1 2 (+ 3 4 (+ 5 6)) )) `(+ 1 2 3 4 (+ 5 6))) ; flatten only *one* level
 	)
 
-
-	(define-test test-cond
-		(assert-equal? (parse `(cond (a b c) (d e f) (else g h))) 	`(if3 (var a)
-																     (seq ((var b) (var c)))
-																     (if3 (var d)
-																          (seq ((var e) (var f)))
-																          (seq ((var g) (var h))))))
-	)
 
 )
 ;(run-test-suites foo)
