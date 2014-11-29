@@ -128,3 +128,8 @@
 	(cond (	(null? lst) initial)
 			((eqv? symbol (car lst)) (count (+ initial 1) (cdr lst) symbol))
 			(else (count initial (cdr lst) symbol))))
+
+(define (value? x)
+	(or	(number? x)
+		(boolean? x)
+	))
