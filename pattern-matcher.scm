@@ -30,7 +30,7 @@
 		 ret-fail))))
 
 (define ?
-  (trace-lambda q(name . guards)
+  (lambda (name . guards)
 	(let ((guard?
 	   (lambda (e)
 		 (andmap 
@@ -46,7 +46,7 @@
 ;;; composing patterns
 
 (define pattern-rule
-  (trace-lambda  pater(pat handler)
+  (lambda (pat handler)
 	(lambda (e failure)
 	  (match pat e handler failure))))
 
