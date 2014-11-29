@@ -29,9 +29,9 @@
 		(assert-equal? (cdr (opt-lambda-args-list `(1 2 3 . 4 ) (lambda (x) x) )) 4 )
 	)
 
-	;(define-test test-letstar-1
-	;	(assert-equal? (letstar '((a 5) (b (+ a 5))) '(+ a b) )  `((lambda (a) ((lambda (b) (+ a b)) (+ a 5))) 5))
-	;)
+	(define-test test-expand-letstar-1
+		(assert-equal? (expand-letstar '((a 5) (b (+ a 5))) '(+ a b) )  `((lambda (a) ((lambda (b) (+ a b)) (+ a 5))) 5))
+	)
 
 	(define-test test-cond
 		(assert-equal? (parse `(cond (a b c) (d e f) (else g h)))
@@ -66,9 +66,9 @@
 	)
 
 	(define-test test-fold-plus
-		(assert-equal? (fold `(+ 1 2 (+ (+ 1 2) a b))) (+ 6 a b) )
-		(assert-equal? (fold `(+ 1 2 (+ a (+ 1 2) b))) (+ 6 a b) )
-		(assert-equal? (fold `(+ 1 2 (+ (* 10 2) a a b))) (+ 23 a a b) )
+		(assert-equal? (fold `(+ 1 2 (+ (+ 1 2) a b))) `(+ 6 a b) )
+		(assert-equal? (fold `(+ 1 2 (+ a (+ 1 2) b))) `(+ 6 a b) )
+		(assert-equal? (fold `(+ 1 2 (+ (* 10 2) a a b))) `(+ 23 a a b) )
 	)
 
 
