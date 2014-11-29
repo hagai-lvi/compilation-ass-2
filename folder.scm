@@ -12,8 +12,8 @@
 ;                     
 ; Ilya: 	+, *, add1, append, car, cdr, cons, list, null?
 ; 
-; Hagai:  	string?, string-append, sub1, zero?
-; 		Done: number?,
+; Hagai:  	string-append, sub1, zero?
+; 		Done: number?, string?,
 
 
 (define fold
@@ -61,6 +61,14 @@
 							(string? e)
 							`(string? ,e))
 						)))
+			(pattern-rule
+				`(string-append . ,(? 'expressions))
+				(lambda (expressions)
+					(let ((folded-expressions (map fold expressions )))
+						(if	(andmap ^const? folded-expressions)
+							(apply string-append folded-expressions)
+							`(string-append ,@folded-expressions))
+					)))
 			(pattern-rule
 				(? 'any-exp)
 				id)
