@@ -71,6 +71,12 @@
 		(assert-equal? (fold `(+ 1 2 (+ a (+ 1 2) b))) `(+ 6 a b) )
 		(assert-equal? (fold `(+ 1 2 (+ (* 10 2) a a b))) `(+ 23 a a b) )
 	)
+
+	(define-test test-fold-add1
+		(assert-equal? (fold `(add1 (+ 2 3))) 6)
+		(assert-equal? (fold `(add1 #t)) `(+ 1 #t))
+		(assert-equal? (fold `(add1 (+ 3 4 (* 2 3) ))) 14)
+	)
 )
 ;(run-test-suites foo)
 ;(run-test compiler-tests test-letstar-1)
