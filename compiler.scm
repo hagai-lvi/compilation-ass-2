@@ -172,7 +172,6 @@
 			`(let* ,(? let-vars-expressions-list?) ,(? 'body1) . ,(? 'body-rest))
 			(lambda (exp-list body1 body-rest)
 				(parse (expand-letstar exp-list body1 body-rest ))))
-				;(display exp-list)(newline)(display body)))
 		(pattern-rule 	;and
 			`(and)
 			(lambda ()
@@ -211,13 +210,13 @@
 				(error 'parse
 				(format "I can't recognize this: ~s" e)))))))
 
-(define expand-letstar (lambda (exp-list body1 . body-rest)
+(define expand-letstar (lambda (exp-list body1 body-rest)
 	(if (= (length exp-list) 0)
 	    (apply beginify `(,body1 ,@body-rest))
 	    (let*( 	(seperated-exp-list (seperate-last-element exp-list))
 				(last (cdr seperated-exp-list))
 				(rest (car seperated-exp-list)))
-		(expand-letstar rest `((lambda (,(car last)) ,(apply beginify `(,body1 ,@body-rest)) ) ,(cadr last)))
+		(expand-letstar rest `((lambda (,(car last)) ,(apply beginify `(,body1 ,@body-rest)) ) ,(cadr last)) `())
 	))))
 
 (define (expand-cond cond-list)
@@ -277,5 +276,5 @@
 
 (define (beginify exp1 . lst)
 	(if (and (list? lst) (> (length lst) 0))
-	    `(begin ,exp1 ,@(car lst))
+	    `(begin ,exp1 ,@lst)
 	    exp1))
