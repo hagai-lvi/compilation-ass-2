@@ -10,10 +10,10 @@
 ;    /**     //*******  /*******   //*******  
 ;    //       ///////   ///////     ///////   
 ;                     
-; Ilya: 	+, *, add1, append, car, cdr, cons, list, null?
+; Ilya: 	+, *, add1, append, car, cdr, cons, list
 ; 
-; Hagai:	zero?
-; 		Done: number?, string?, string-append, sub1
+; Hagai:	
+; 		Done: number?, string?, string-append, sub1, zero?, null?
 
 
 (define fold
@@ -63,6 +63,13 @@
 						(if	(^const? exp)
 							(zero? exp)
 							`(zero? ,exp )))))
+			(pattern-rule
+				`(null? ,(? `exp))
+				(lambda (exp)
+					(let ((e (fold exp)))
+						(if	(^const? e)
+							(null? e)
+							`(null? ,e)))))
 			(pattern-rule
 				`(string? ,(? exp))
 				(lambda (exp)
