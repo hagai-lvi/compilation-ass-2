@@ -29,8 +29,9 @@
 		(assert-equal? (cdr (opt-lambda-args-list `(1 2 3 . 4 ) (lambda (x) x) )) 4 )
 	)
 
-	(define-test test-expand-letstar-1
-		(assert-equal? (expand-letstar '((a 5) (b (+ a 5))) '(+ a b) )  `((lambda (a) ((lambda (b) (+ a b)) (+ a 5))) 5))
+	(define-test test-expand-letstar
+		(assert-equal? (expand-letstar '((a 5) (b (+ a 5))) '(+ a b) `() )  `((lambda (a) ((lambda (b) (+ a b)) (+ a 5))) 5))
+		(assert-equal? (expand-letstar '((a 5) (b (+ a 5))) '(+ a b) `((+ a b)) )  `((lambda (a) ((lambda (b) (begin (+ a b) (+ a b))) (+ a 5))) 5))
 	)
 
 	(define-test test-cond
@@ -45,6 +46,14 @@
 	(define-test test-letrec
 		(assert-equal? (format "~a" (parse '(letrec ((f1 (lambda (x) (+ 1 x))) (f2 (lambda (y) (* 1 y)))) 1)))
 						"(applic (var Ym) ((lambda-simple (g0 f1 f2) (const 1)) (lambda-simple (g0 f1 f2) (lambda-simple (x) (applic (var +) ((const 1) (var x))))) (lambda-simple (g0 f1 f2) (lambda-simple (y) (applic (var *) ((const 1) (var y)))))))")
+	)
+
+	(define-test test-beginify
+		(assert-equal? (beginify 'a) 'a)
+		(assert-equal? (beginify 'a `b) `(begin a b))
+		(assert-equal? (beginify 'a `b) `(begin a b))
+		(assert-equal? (beginify `(+ 1 2) ) `(+ 1 2))
+		(assert-equal? (beginify `(+ 1 2) `(+ 3 4) ) `(begin (+ 1 2) (+ 3 4)))
 	)
 
 )
