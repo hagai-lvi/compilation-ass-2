@@ -27,6 +27,11 @@
 						sum
 						`(* ,sum ,@non-numbers) ))))
 			(pattern-rule
+				`(add1 ,(? 'rest))
+				(lambda (rest)
+					(fold `(+ 1 ,rest)))
+			)
+			(pattern-rule
 				(? 'any-exp)
 				id)
 		)))
