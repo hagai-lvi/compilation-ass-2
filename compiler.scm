@@ -174,7 +174,7 @@
 	  (pattern-rule 	;let*
 			`(let* ,(? let-vars-expressions-list?) . ,(? 'body))
 			(lambda (exp-list body)
-				(parse (letstar exp-list `(,@body)))))
+				(parse (letstar exp-list  `(,@body)))))
 	  
 	    (pattern-rule 	;let*
 			`(and)
@@ -206,7 +206,7 @@
 	     (parse  `((lambda ,(get-lambda-variables vars) ,body) ,@(get-lambda-arguments vars)))))
 	  (pattern-rule
 	  	`(cond . ,(? 'cond-list)) ; TODO add identifier for cond list
-		(lambda (cond-list) (parse (expand-cond cond-list)))
+		(lambda (cond-list) (parse (expand-cond `(,@cond-list))))
 		)
 		)))
 	(lambda (e)
@@ -221,7 +221,7 @@
 	    (let*( 	(seperated-exp-list (seperate-last-element exp-list))
 				(last (cdr seperated-exp-list))
 				(rest (car seperated-exp-list)))
-		(letstar-new rest `((lambda (,(car last)) ,@body ) ,(cadr last)))
+		(letstar rest `((lambda (,(car last)) ,body ) ,(cadr last)))
 	))))
 
 (define letstar-new (trace-lambda letstar (exp-list body)
@@ -243,7 +243,7 @@
 											(if 	(null? rest)
 							
 													(succ `(if ,(caar cond-list) ,(cadar cond-list) ))
-													(succ `(if ,(caar cond-list) ,(cadar cond-list) ,rest))))))))))
+													(succ `(if ,(caar cond-list) ,(cadar cond-list) (begin ,rest)))))))))))
 		(f cond-list (lambda (x) x))))
 
 (define Ym
