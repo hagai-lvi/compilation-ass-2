@@ -92,6 +92,13 @@
 		(assert-equal? (fold `(string? 'a)) #f )
 		(assert-equal? (fold `(string? x)) `(string? x) )
 	)
+
+	(define-test test-fold-string-append
+		(assert-equal? (fold `(string-append "a" "b"))  "ab")
+		(assert-equal? (fold `(string-append "a" a))  `(string-append "a" a))
+		(assert-equal? (fold `(string-append))  "")
+		(assert-equal? (fold `(string-append "a" (string-append "b" "c")))  "abc")
+	)
 )
 ;(run-test-suites foo)
 ;(run-test compiler-tests test-letstar-1)
