@@ -84,6 +84,7 @@
 						(if	(andmap value? folded-expressions)
 							(apply string-append folded-expressions)
 							`(string-append ,@folded-expressions)))))
+							;`(string-append ,@folded-expressions)))))
 			(pattern-rule
 				(? 'any-exp)
 				id)
@@ -132,5 +133,37 @@
 (define (value? x)
 	(or	(number? x)
 		(boolean? x)
-		(string? x)
-	))
+		(string? x)))
+
+;(define (get-head pred lst)
+;	(letrec ((f (lambda (initial-lst pred lst)
+;					(cond	((null? lst) (cons initial-lst `()))
+;							((pred (car lst)) (f `(,@initial-lst ,(car lst)) pred (cdr lst)))
+;							(else (cons initial-lst (list lst)) )))))
+;	(f `() pred lst)
+;))
+
+;;(define (seperate-list pred lst)
+;;	)
+
+;(define (split-list-by-pred pred lst)
+;	(letrec ((f (lambda (pred lst succ fail)
+;					(cond 	((null? lst) (succ `() `()))
+;							((pred (car lst)) (f 	pred
+;													(cdr lst)
+;													(lambda (succ-lst rest)
+;														(succ (cons (car lst) succ-lst) rest))
+;													(lambda (fail-lst rest)
+;														(succ (list (car lst)) (cons fail-lst rest) ))))
+;							(else (f 	pred
+;										(cdr lst)
+;										(lambda (succ-lst rest)
+;											(fail (list (car lst)) (cons succ-lst rest) ))
+;										(lambda (fail-lst rest)
+;											(fail (cons (car lst) fail-lst ) rest ))))))))
+;	(f 	pred
+;		lst
+;		(lambda (succ-lst rest)
+;			(cons succ-lst rest))
+;		(lambda (fail-lst rest)
+;			(cons `() (cons fail-lst rest))))))
