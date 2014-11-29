@@ -1,5 +1,20 @@
 (load "compiler.scm")
 
+;
+; **********   *******   *******     *******  
+;/////**///   **/////** /**////**   **/////** 
+;    /**     **     //**/**    /** **     //**
+;    /**    /**      /**/**    /**/**      /**
+;    /**    /**      /**/**    /**/**      /**
+;    /**    //**     ** /**    ** //**     ** 
+;    /**     //*******  /*******   //*******  
+;    //       ///////   ///////     ///////   
+;                     
+; Ilya: 	+, *, add1, append, car, cdr, cons, list
+; 
+; Hagai:	
+; 		Done: number?, string?, string-append, sub1, zero?, null?
+
 
 
 (define quote? 
@@ -42,6 +57,7 @@
 						sum
 						`(* ,sum ,@non-numbers) ))))
 			(pattern-rule
+<<<<<<< HEAD
 			`(,(? 'quote quote?))
 			(lambda(vars)
 				 (fold vars)))
@@ -249,6 +265,51 @@
  
  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 		
 
+=======
+				`(add1 ,(? 'rest))
+				(lambda (rest)
+					(fold `(+ 1 ,rest))))
+			(pattern-rule
+				`(sub1 ,(? 'rest))
+				(lambda (rest)
+					(fold `(+ -1 ,rest))))
+			(pattern-rule
+				`(number? ,(? 'exp))
+				(lambda (exp)
+					(let ((e (fold exp)))
+						(if	(value? e)
+							(number? e)
+							`(number? ,e)))))
+			(pattern-rule
+				`(zero? ,(? `exp))
+				(lambda (exp)
+					(let ((e (fold exp)))
+						(if	(value? exp)
+							(zero? exp)
+							`(zero? ,exp )))))
+			(pattern-rule
+				`(null? ,(? `exp))
+				(lambda (exp)
+					(let ((e (fold exp)))
+						(if	(value? e)
+							(null? e)
+							`(null? ,e)))))
+			(pattern-rule
+				`(string? ,(? exp))
+				(lambda (exp)
+					(let ((e (fold exp)))
+						(if	(value? e)
+							(string? e)
+							`(string? ,e)))))
+			(pattern-rule
+				`(string-append . ,(? 'expressions))
+				(lambda (expressions)
+					(let ((folded-expressions (map fold expressions )))
+						(if	(andmap value? folded-expressions)
+							(apply string-append folded-expressions)
+							`(string-append ,@folded-expressions)))))
+							;`(string-append ,@folded-expressions)))))
+>>>>>>> 5fa048b0aa79e581ee13521d4a467ad467db7338
 			(pattern-rule
 				(? 'any-exp)
 				id)
@@ -291,3 +352,41 @@
 	(cond (	(null? lst) initial)
 			((eqv? symbol (car lst)) (count (+ initial 1) (cdr lst) symbol))
 			(else (count initial (cdr lst) symbol))))
+
+(define (value? x)
+	(or	(number? x)
+		(boolean? x)
+		(string? x)))
+
+;(define (get-head pred lst)
+;	(letrec ((f (lambda (initial-lst pred lst)
+;					(cond	((null? lst) (cons initial-lst `()))
+;							((pred (car lst)) (f `(,@initial-lst ,(car lst)) pred (cdr lst)))
+;							(else (cons initial-lst (list lst)) )))))
+;	(f `() pred lst)
+;))
+
+;;(define (seperate-list pred lst)
+;;	)
+
+;(define (split-list-by-pred pred lst)
+;	(letrec ((f (lambda (pred lst succ fail)
+;					(cond 	((null? lst) (succ `() `()))
+;							((pred (car lst)) (f 	pred
+;													(cdr lst)
+;													(lambda (succ-lst rest)
+;														(succ (cons (car lst) succ-lst) rest))
+;													(lambda (fail-lst rest)
+;														(succ (list (car lst)) (cons fail-lst rest) ))))
+;							(else (f 	pred
+;										(cdr lst)
+;										(lambda (succ-lst rest)
+;											(fail (list (car lst)) (cons succ-lst rest) ))
+;										(lambda (fail-lst rest)
+;											(fail (cons (car lst) fail-lst ) rest ))))))))
+;	(f 	pred
+;		lst
+;		(lambda (succ-lst rest)
+;			(cons succ-lst rest))
+;		(lambda (fail-lst rest)
+;			(cons `() (cons fail-lst rest))))))

@@ -10,9 +10,7 @@
 	(define-test test-<lines>-1
 		(assert-equal? (parse '(lambda (x y z) (if x y z))) '(lambda-simple (x y z) (if3 (var x) (var y) (var z))))
 	)
-
 	;TODO add test for parse let*
-
 )
 
 (define-test-suite compiler-tests
@@ -55,7 +53,6 @@
 		(assert-equal? (beginify `(+ 1 2) ) `(+ 1 2))
 		(assert-equal? (beginify `(+ 1 2) `(+ 3 4) ) `(begin (+ 1 2) (+ 3 4)))
 	)
-
 )
 
 (define-test-suite folder-tests
@@ -71,9 +68,55 @@
 		(assert-equal? (fold `(+ 1 2 (+ a (+ 1 2) b))) `(+ 6 a b) )
 		(assert-equal? (fold `(+ 1 2 (+ (* 10 2) a a b))) `(+ 23 a a b) )
 	)
+
+	(define-test test-fold-add1
+		(assert-equal? (fold `(add1 (+ 2 3))) 6)
+		(assert-equal? (fold `(add1 #t)) `(+ 1 #t))
+		(assert-equal? (fold `(add1 (+ 3 4 (* 2 3) ))) 14)
+	)
+
+	(define-test test-fold-sub1
+		(assert-equal? (fold `(sub1 (+ 2 3))) 4)
+		(assert-equal? (fold `(sub1 #t)) `(+ -1 #t))
+		(assert-equal? (fold `(sub1 (+ 3 4 (* 2 3) ))) 12)
+	)
+
+	(define-test test-fold-number?
+		(assert-equal?  (fold `(number? 1)) #t )
+		(assert-equal?  (fold `(number? '1)) #f)
+		(assert-equal?  (fold `(number? (car `(1 a)))) #t )
+		(assert-equal?  (fold `(number? (cadr `(1 a)))) #f )
+	)
+
+	(define-test test-null?
+		(assert-equal? (fold `(null? `())) #t )
+		(assert-equal? (fold `(null? (car (list `())))) #t )
+		(assert-equal? (fold `(null? `(1))) #f )
+		(assert-equal? (fold `(null? (car (list `(1))))) #f )
+	)
+
+	(define-test test-fold-zero?
+		(assert-equal? (fold `(zero? 0)) #t )
+		(assert-equal? (fold `(zero? (sub1 1))) #t )
+		(assert-equal? (fold `(zero? 'a)) #f )
+		(assert-equal? (fold `(zero? "a")) #f )
+		(assert-equal? (fold `(zero? (car `(1 a)) )) #t )
+	)
+
+	(define-test test-fold-string?
+		(assert-equal? (fold `(string? "abc")) #t )
+		(assert-equal? (fold `(string? (car `("abc")))) #t )
+		(assert-equal? (fold `(string? 1)) #f )
+		(assert-equal? (fold `(string? 'a)) #f )
+		(assert-equal? (fold `(string? x)) `(string? x) )
+	)
+
+	(define-test test-fold-string-append
+		(assert-equal? (fold `(string-append "a" "b"))  "ab")
+		(assert-equal? (fold `(string-append "a" a))  `(string-append "a" a))
+		(assert-equal? (fold `(string-append))  "")
+		(assert-equal? (fold `(string-append "a" (string-append "b" "c")))  "abc")
+	)
 )
-;(run-test-suites foo)
-;(run-test compiler-tests test-letstar-1)
-;(run-tests foo test-one)
 
 (exit (+ (run-test-suites parse-tests compiler-tests folder-tests)))
