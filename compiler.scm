@@ -169,10 +169,11 @@
 			(lambda(vars body)
 				(parse `((lambda ,(get-lambda-variables vars) ,@body) ,@(get-lambda-arguments vars)))))
 		(pattern-rule 	;let*
-			`(let* ,(? let-vars-expressions-list?) . ,(? 'body))
-			(lambda (exp-list body)
-				(parse (letstar exp-list body))))
-		(pattern-rule 	;let*
+			`(let* ,(? let-vars-expressions-list?) ,(? 'body1) . ,(? 'body-rest))
+			(lambda (exp-list body1 body-rest)
+				(parse (apply letstar `(,exp-list ,body1 ,body-rest)))))
+				;(display exp-list)(newline)(display body)))
+		(pattern-rule 	;and
 			`(and)
 			(lambda ()
 			`(const #t)))
@@ -180,22 +181,22 @@
 			`(and ,(? 'first))
 			(lambda (first)
 				(parse first)))
-		(pattern-rule 	;let*
+		(pattern-rule 	;and
 			`(and ,(? 'first) ,(? 'second))
 			(lambda (first second)
 				(parse `(if ,first ,second #f))))
-		(pattern-rule 	;let*
+		(pattern-rule 	;and
 			`(and ,(? 'first) . ,(? 'rest))
 			(lambda (first rest)
 				(parse `(if ,first (and ,@rest) #f))))
 		(pattern-rule
 			`(,(? 'va  ^var?) . ,(? 'varb list?))
 			(lambda (vari variables)
-				`(applic (var ,vari) ,(map (lambda(s)(parse s)) variables ))))
+				`(applic (var ,vari) ,(map (lambda (s)(parse s)) variables ))))
 		(pattern-rule
 			`(,(? 'va list?) . ,(? 'va2 list?))
 			(lambda (first rest)
-				`(applic ,(parse first) ,(map (lambda(exp)(parse exp)) rest))))
+				`(applic ,(parse first) ,(map (lambda (exp)(parse exp)) rest))))
 		(pattern-rule
 			`(let ,(? 'va ) ,(? 'body))
 			(lambda (vars body)
@@ -210,22 +211,13 @@
 				(error 'parse
 				(format "I can't recognize this: ~s" e)))))))
 
-(define letstar (lambda (exp-list body)
+(define letstar (trace-lambda letstar (exp-list body1 . body-rest)
 	(if (= (length exp-list) 0)
-	    body
+	    (apply beginify `(,body1 ,@body-rest))
 	    (let*( 	(seperated-exp-list (seperate-last-element exp-list))
 				(last (cdr seperated-exp-list))
 				(rest (car seperated-exp-list)))
-		(letstar-new rest `((lambda (,(car last)) ,@body ) ,(cadr last)))
-	))))
-
-(define letstar-new (lambda (exp-list body)
-	(if (= (length exp-list) 0)
-	    body
-	    (let*( 	(seperated-exp-list (seperate-last-element exp-list))
-				(last (cdr seperated-exp-list))
-				(rest (car seperated-exp-list)))
-		(letstar-new rest `((lambda (,(car last)) ,body ) ,(cadr last)))
+		(letstar rest `((lambda (,(car last)) ,(apply beginify `(,body1 ,@body-rest)) ) ,(cadr last)))
 	))))
 
 (define (expand-cond cond-list)
@@ -283,3 +275,7 @@
 					    					(succ (cons (car list) rest) last)))))))
 	(f list (lambda (x y) (cons x y)))))
 
+(define (beginify exp1 . lst)
+	(if (and (list? lst) (> (length lst) 0))
+	    `(begin ,exp1 ,@(car lst))
+	    exp1))
