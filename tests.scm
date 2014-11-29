@@ -43,16 +43,8 @@
 	)
 
 	(define-test test-letrec
-		(assert-equal? (parse '(letrec ((f1 (lambda (x) (+ 1 x))) (f2 (lambda (y) (* 1 y)))) 1))
-						`(applic
-							(var ym)
-							((lambda-simple (g1102 f1 f2) (const 1))
-								(lambda-simple
-									(g0 f1 f2)
-									(lambda-simple (x) (applic (var +) ((const 1) (var x)))))
-								(lambda-simple
-									(g0 f1 f2)
-									(lambda-simple (y) (applic (var *) ((const 1) (var y))))))))
+		(assert-equal? (format "~a" (parse '(letrec ((f1 (lambda (x) (+ 1 x))) (f2 (lambda (y) (* 1 y)))) 1)))
+						"(applic (var Ym) ((lambda-simple (g0 f1 f2) (const 1)) (lambda-simple (g0 f1 f2) (lambda-simple (x) (applic (var +) ((const 1) (var x))))) (lambda-simple (g0 f1 f2) (lambda-simple (y) (applic (var *) ((const 1) (var y)))))))")
 	)
 
 )
