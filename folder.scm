@@ -11,7 +11,9 @@
 ;    //       ///////   ///////     ///////   
 ;                     
 ; Ilya: 	+, *, add1, append, car, cdr, cons, list, null?
-; Hagai:  	number?, string?, string-append, sub1, zero?
+; 
+; Hagai:  	string?, string-append, sub1, zero?
+; 		Done: number?,
 
 
 (define fold
@@ -50,8 +52,15 @@
 					(let ((e (fold exp)))
 						(if	(^const? e)
 							(number? e)
-							`(number? ,e))
-					)))
+							`(number? ,e)))))
+			(pattern-rule
+				`(string? ,(? exp))
+				(lambda (exp)
+					(let ((e (fold exp)))
+						(if	(^const? e)
+							(string? e)
+							`(string? ,e))
+						)))
 			(pattern-rule
 				(? 'any-exp)
 				id)
