@@ -46,6 +46,10 @@
 				(lambda (rest)
 					(fold `(+ 1 ,rest))))
 			(pattern-rule
+				`(sub1 ,(? 'rest))
+				(lambda (rest)
+					(fold `(+ -1 ,rest))))
+			(pattern-rule
 				`(number? ,(? 'exp))
 				(lambda (exp)
 					(let ((e (fold exp)))
