@@ -84,6 +84,14 @@
 		(assert-equal?  (fold `(number? (car `(1 a)))) #t )
 		(assert-equal?  (fold `(number? (cadr `(1 a)))) #f )
 	)
+
+	(define-test test-fold-string?
+		(assert-equal? (fold `(string? "abc")) #t )
+		(assert-equal? (fold `(string? (car `("abc")))) #t )
+		(assert-equal? (fold `(string? 1)) #f )
+		(assert-equal? (fold `(string? 'a)) #f )
+		(assert-equal? (fold `(string? x)) `(string? x) )
+	)
 )
 ;(run-test-suites foo)
 ;(run-test compiler-tests test-letstar-1)
