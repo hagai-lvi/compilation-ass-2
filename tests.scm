@@ -78,6 +78,12 @@
 		(assert-equal? (fold `(add1 (+ 3 4 (* 2 3) ))) 14)
 	)
 
+	(define-test test-fold-sub1
+		(assert-equal? (fold `(sub1 (+ 2 3))) 4)
+		(assert-equal? (fold `(sub1 #t)) `(+ -1 #t))
+		(assert-equal? (fold `(sub1 (+ 3 4 (* 2 3) ))) 12)
+	)
+
 	(define-test test-fold-number?
 		(assert-equal?  (fold `(number? 1)) #t )
 		(assert-equal?  (fold `(number? '1)) #f)
