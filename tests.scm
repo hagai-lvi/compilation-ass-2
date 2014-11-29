@@ -77,6 +77,13 @@
 		(assert-equal? (fold `(add1 #t)) `(+ 1 #t))
 		(assert-equal? (fold `(add1 (+ 3 4 (* 2 3) ))) 14)
 	)
+
+	(define-test test-fold-number?
+		(assert-equal?  (fold `(number? 1)) #t )
+		(assert-equal?  (fold `(number? '1)) #f)
+		(assert-equal?  (fold `(number? (car `(1 a)))) #t )
+		(assert-equal?  (fold `(number? (cadr `(1 a)))) #f )
+	)
 )
 ;(run-test-suites foo)
 ;(run-test compiler-tests test-letstar-1)
