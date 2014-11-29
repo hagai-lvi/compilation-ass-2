@@ -15,7 +15,7 @@
 
 )
 
-(define-test-suite general-tests
+(define-test-suite compiler-tests
 
 	(define-test test-improper-list?-1
 		(assert-false (improper-list? '(1 2 3)))
@@ -71,11 +71,9 @@
 		(assert-equal? (fold `(+ 1 2 (+ a (+ 1 2) b))) `(+ 6 a b) )
 		(assert-equal? (fold `(+ 1 2 (+ (* 10 2) a a b))) `(+ 23 a a b) )
 	)
-
-
 )
 ;(run-test-suites foo)
-;(run-test general-tests test-letstar-1)
+;(run-test compiler-tests test-letstar-1)
 ;(run-tests foo test-one)
 
-(exit (+ (run-test-suites parse-tests general-tests folder-tests)))
+(exit (+ (run-test-suites parse-tests compiler-tests folder-tests)))
