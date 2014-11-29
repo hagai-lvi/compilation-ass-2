@@ -88,6 +88,13 @@
 		(assert-equal?  (fold `(number? (cadr `(1 a)))) #f )
 	)
 
+	(define-test test-null?
+		(assert-equal? (fold `(null? `())) #t )
+		(assert-equal? (fold `(null? (car (list `())))) #t )
+		(assert-equal? (fold `(null? `(1))) #f )
+		(assert-equal? (fold `(null? (car (list `(1))))) #f )
+	)
+
 	(define-test test-fold-zero?
 		(assert-equal? (fold `(zero? 0)) #t )
 		(assert-equal? (fold `(zero? (sub1 1))) #t )
