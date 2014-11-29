@@ -10,9 +10,7 @@
 	(define-test test-<lines>-1
 		(assert-equal? (parse '(lambda (x y z) (if x y z))) '(lambda-simple (x y z) (if3 (var x) (var y) (var z))))
 	)
-
 	;TODO add test for parse let*
-
 )
 
 (define-test-suite compiler-tests
@@ -55,7 +53,6 @@
 		(assert-equal? (beginify `(+ 1 2) ) `(+ 1 2))
 		(assert-equal? (beginify `(+ 1 2) `(+ 3 4) ) `(begin (+ 1 2) (+ 3 4)))
 	)
-
 )
 
 (define-test-suite folder-tests
@@ -114,8 +111,5 @@
 		(assert-equal? (fold `(string-append "a" (string-append "b" "c")))  "abc")
 	)
 )
-;(run-test-suites foo)
-;(run-test compiler-tests test-letstar-1)
-;(run-tests foo test-one)
 
 (exit (+ (run-test-suites parse-tests compiler-tests folder-tests)))
