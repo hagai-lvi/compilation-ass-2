@@ -45,6 +45,14 @@
 					(fold `(+ 1 ,rest)))
 			)
 			(pattern-rule
+				`(number? ,(? 'exp))
+				(lambda (exp)
+					(let ((e (fold exp)))
+						(if	(^const? e)
+							(number? e)
+							`(number? ,e))
+					)))
+			(pattern-rule
 				(? 'any-exp)
 				id)
 		)))
