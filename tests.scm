@@ -91,6 +91,14 @@
 		(assert-equal?  (fold `(number? (cadr `(1 a)))) #f )
 	)
 
+	(define-test test-fold-zero?
+		(assert-equal? (fold `(zero? 0)) #t )
+		(assert-equal? (fold `(zero? (sub1 1))) #t )
+		(assert-equal? (fold `(zero? 'a)) #f )
+		(assert-equal? (fold `(zero? "a")) #f )
+		(assert-equal? (fold `(zero? (car `(1 a)) )) #t )
+	)
+
 	(define-test test-fold-string?
 		(assert-equal? (fold `(string? "abc")) #t )
 		(assert-equal? (fold `(string? (car `("abc")))) #t )
