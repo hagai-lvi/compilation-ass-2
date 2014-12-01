@@ -78,6 +78,14 @@
 							(string? e)
 							`(string? ,e)))))
 			(pattern-rule
+				`(if ,(? 'pred) ,(? 'dit) )
+				(lambda (pred dit)
+					(let (	(pred-folded (fold pred))
+							(dit-folded (fold dit)))
+					(if (value? pred-folded)
+						(if pred-folded dit-folded) 
+						`(if ,pred-folded ,dit-folded )))))
+			(pattern-rule
 				`(if ,(? 'pred) ,(? 'dit) ,(? 'dif) )
 				(lambda (pred dit dif)
 					(let (	(pred-folded (fold pred))
