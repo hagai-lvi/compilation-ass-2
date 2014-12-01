@@ -18,18 +18,18 @@
 
 (define (id x)x)
 (define quote? 
-	(trace-lambda qq(e)
+	(lambda (e)
  (or (eq? e 'quote)(and (pair? e)(eq? (car e) 'quote)))))
 
 
-(define get-ex-left (trace-lambda get-ex(op e)(let*  ((exp (fold e))
+(define get-ex-left (lambda (op e)(let*  ((exp (fold e))
    	(exp2 (if(quote? exp)`'(,@(op (cadr exp)))
    		(op exp))))
    	(if(equal? (car exp) 'cons)
    	(op (cdr exp))exp2))))
 
 
-(define get-ex-right (trace-lambda get-ex(op e)(let*  ((exp (fold e))
+(define get-ex-right (lambda (op e)(let*  ((exp (fold e))
    	(exp2 (if(quote? exp)`'(,@(op (cadr exp)))
    		(op exp))))
    	(if(equal? (car exp) 'cons)
@@ -94,30 +94,31 @@
 			(lambda(q vars)
 				 `(quote ,vars)))
 			(pattern-rule
-			`(cons . ,(? `vars (lambda(vars)(ormap (trace-lambda cont(x)(not (or (^const? x)(quote? x))))vars))))
+
+			`(cons . ,(? `vars (lambda(vars)(ormap (lambda (x)(not (or (^const? x)(quote? x))))vars))))
 			(lambda(vars)
 				`(cons ,@vars)))
 			
 			(pattern-rule
 			`(cons  ,(? `first quote?) ,(? 'quote quote?) ) 
-				(trace-lambda a(first  second)
+				(lambda (first  second)
 				`'(,(cadr (fold first)),@(cadr (fold second)))))
 
 
 			(pattern-rule
 			`(cons  ,(? `first ) ,(? 'quote quote?) ) 
-				(trace-lambda a(first  second)
+				(lambda (first  second)
 				`'(,(fold first),@(cadr (fold second)))))
 
 			
 			(pattern-rule
 			`(cons  ,(? `first quote?) ,(? 'quote )) 
-				(trace-lambda a(first  second)
+				(lambda (first  second)
 				`'(,(cadr (fold first)),@(fold second))))			
 
 			(pattern-rule
 			`(cons  ,(? `first ) ,(? 'quote ?) ) 
-				(trace-lambda a(first  second)
+				(lambda (first  second)
 				`'(,(fold first),@(fold second))))
 
 
@@ -399,9 +400,9 @@
 				`(zero? ,(? `exp))
 				(lambda (exp)
 					(let ((e (fold exp)))
-						(if	(value? exp)
-							(zero? exp)
-							`(zero? ,exp )))))
+						(if	(value? e)
+							(zero? e)
+							`(zero? ,e )))))
 			(pattern-rule
 				`(null? ,(? `exp))
 				(lambda (exp)
@@ -496,6 +497,7 @@
 		(boolean? x)
 		(string? x)
 		(char? x)
+		(quote? x)
 		(and (list? x) (andmap (lambda (x) (value? x) ) x))
 		(and (pair? x) (value? (car x)) (value? (cdr x)) )
 		))

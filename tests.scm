@@ -71,28 +71,28 @@
 
 	(define-test test-fold-add1
 		(assert-equal? (fold `(add1 (+ 2 3))) 6)
-		(assert-equal? (fold `(add1 #t)) `(+ 1 #t))
+		(assert-equal? (fold `(add1 #t)) '(+ 1 #t))
 		(assert-equal? (fold `(add1 (+ 3 4 (* 2 3) ))) 14)
 	)
 
 	(define-test test-fold-sub1
 		(assert-equal? (fold `(sub1 (+ 2 3))) 4)
-		(assert-equal? (fold `(sub1 #t)) `(+ -1 #t))
+		(assert-equal? (fold `(sub1 #t)) '(+ -1 #t))
 		(assert-equal? (fold `(sub1 (+ 3 4 (* 2 3) ))) 12)
 	)
 
 	(define-test test-fold-number?
 		(assert-equal?  (fold `(number? 1)) #t )
 		(assert-equal?  (fold `(number? '1)) #f)
-		(assert-equal?  (fold `(number? (car `(1 a)))) #t )
-		(assert-equal?  (fold `(number? (cadr `(1 a)))) #f )
+		(assert-equal?  (fold `(number? (car '(1 a)))) #t )
+		(assert-equal?  (fold `(number? (cadr '(1 a)))) #f )
 	)
 
-	(define-test test-null?
-		(assert-equal? (fold `(null? `())) #t )
-		(assert-equal? (fold `(null? (car (list `())))) #t )
-		(assert-equal? (fold `(null? `(1))) #f )
-		(assert-equal? (fold `(null? (car (list `(1))))) #f )
+	(define-test test-fold-null?
+		(assert-equal? (fold `(null? '())) #t )
+		(assert-equal? (fold `(null? (car (list '())))) #t )
+		(assert-equal? (fold `(null? '(1))) #f )
+		(assert-equal? (fold `(null? (car (list '(1))))) #f )
 	)
 
 	(define-test test-fold-zero?
@@ -100,39 +100,39 @@
 		(assert-equal? (fold `(zero? (sub1 1))) #t )
 		(assert-equal? (fold `(zero? 'a)) #f )
 		(assert-equal? (fold `(zero? "a")) #f )
-		(assert-equal? (fold `(zero? (car `(1 a)) )) #t )
+		(assert-equal? (fold `(zero? (car '(1 a)) )) #t )
 	)
 
 	(define-test test-fold-string?
 		(assert-equal? (fold `(string? "abc")) #t )
-		(assert-equal? (fold `(string? (car `("abc")))) #t )
+		(assert-equal? (fold `(string? (car '("abc")))) #t )
 		(assert-equal? (fold `(string? 1)) #f )
 		(assert-equal? (fold `(string? 'a)) #f )
-		(assert-equal? (fold `(string? x)) `(string? x) )
+		(assert-equal? (fold `(string? x)) '(string? x) )
 	)
 
 	(define-test test-fold-string-append
 		(assert-equal? (fold `(string-append "a" "b"))  "ab")
-		(assert-equal? (fold `(string-append "a" a))  `(string-append "a" a))
+		(assert-equal? (fold `(string-append "a" a))  '(string-append "a" a))
 		(assert-equal? (fold `(string-append))  "")
 		(assert-equal? (fold `(string-append "a" (string-append "b" "c")))  "abc")
 	)
 
 	(define-test test-fold-if
 		;;;;;; Tests for (if pred dit dif) ;;;;;;;
-		(assert-equal? (fold `(if a b c)) `(if a b c) )
-		(assert-equal? (fold `(if #t b c)) `b )
-		(assert-equal? (fold `(if #f b c)) `c )
+		(assert-equal? (fold `(if a b c)) '(if a b c) )
+		(assert-equal? (fold `(if #t b c)) 'b )
+		(assert-equal? (fold `(if #f b c)) 'c )
 		(assert-equal? (fold `(if (add1 1) (+ 3 4) c)) 7 )
-		(assert-equal? (fold `(if (car `(#t #f)) 1 2)) 1)
-		(assert-equal? (fold `(if (cadr `(#t #f)) 1 2)) 2)
+		(assert-equal? (fold `(if (car '(#t #f)) 1 2)) 1)
+		(assert-equal? (fold `(if (cadr '(#t #f)) 1 2)) 2)
 		;;;;;; Tests for (if pred dit) ;;;;;;;
-		(assert-equal? (fold `(if a b)) `(if a b) )
-		(assert-equal? (fold `(if #t b )) `b )
+		(assert-equal? (fold `(if a b)) '(if a b) )
+		(assert-equal? (fold `(if #t b )) 'b )
 		(assert-equal? (fold `(if #f b )) *void-object* )
 		(assert-equal? (fold `(if (add1 1) (+ 3 4) )) 7 )
-		(assert-equal? (fold `(if (car `(#t #f)) 1 )) 1)
-		(assert-equal? (fold `(if (cadr `(#t #f)) 1 )) *void-object*)
+		(assert-equal? (fold `(if (car '(#t #f)) 1 )) 1)
+		(assert-equal? (fold `(if (cadr '(#t #f)) 1 )) *void-object*)
 	)
 )
 
