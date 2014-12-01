@@ -78,6 +78,15 @@
 							(string? e)
 							`(string? ,e)))))
 			(pattern-rule
+				`(if ,(? 'pred) ,(? 'dit) ,(? 'dif) )
+				(lambda (pred dit dif)
+					(let (	(pred-folded (fold pred))
+							(dit-folded (fold dit))
+							(dif-folded (fold dif)))
+					(if (value? pred-folded)
+						(if pred-folded dit-folded dif-folded) 
+						`(if ,pred-folded ,dit-folded ,dif-folded)))))
+			(pattern-rule
 				`(string-append . ,(? 'expressions))
 				(lambda (expressions)
 					(let ((folded-expressions (map fold expressions )))
@@ -90,13 +99,10 @@
 				id)
 		)))
 	(lambda (e)
-		(let ((exp (if 	(list? e)
-		    			(map fold e)
-		    			e)))
-			(run exp
+			(run e
 			(lambda ()
 				(error 'parse
-				(format "I can't recognize this: ~s" e))))))))
+				(format "I can't recognize this: ~s" e)))))))
 
 (define (flatten sym list)
 	(letrec ((f (lambda (list succ)
