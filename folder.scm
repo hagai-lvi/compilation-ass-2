@@ -400,7 +400,7 @@
 				`(zero? ,(? `exp))
 				(lambda (exp)
 					(let ((e (fold exp)))
-						(if	(value? e)
+						(if	(number? e)
 							(zero? e)
 							`(zero? ,e )))))
 			(pattern-rule
