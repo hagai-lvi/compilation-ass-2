@@ -308,10 +308,10 @@
 				`(string-append . ,(? 'expressions))
 				(lambda (expressions)
 					(let ((folded-expressions (map fold expressions )))
-						(if	(andmap value? folded-expressions)
+						(if	(andmap string? folded-expressions)
 							(apply string-append folded-expressions)
-							`(string-append ,@folded-expressions)))))
-							;`(string-append ,@folded-expressions)))))
+							; `(string-append ,@folded-expressions)))))
+							(append-strings (filter (lambda (x) (not (null? x))) (split-list-by-pred string? folded-expressions)))))))
 			(pattern-rule
 				(? 'any-exp)
 				id)
@@ -360,35 +360,41 @@
 		(boolean? x)
 		(string? x)))
 
-;(define (get-head pred lst)
-;	(letrec ((f (lambda (initial-lst pred lst)
-;					(cond	((null? lst) (cons initial-lst `()))
-;							((pred (car lst)) (f `(,@initial-lst ,(car lst)) pred (cdr lst)))
-;							(else (cons initial-lst (list lst)) )))))
-;	(f `() pred lst)
-;))
+(define (id-variadic . lst) lst)
 
-;;(define (seperate-list pred lst)
-;;	)
+(define append-strings
+	(lambda (lst)
+		(let ((appended-lst (map	(lambda (x)
+					(if (list-of-strings? x)
+						(apply string-append x)
+						x))
+						lst)))
+		`(string-append ,@appended-lst)
+		)))
 
-;(define (split-list-by-pred pred lst)
-;	(letrec ((f (lambda (pred lst succ fail)
-;					(cond 	((null? lst) (succ `() `()))
-;							((pred (car lst)) (f 	pred
-;													(cdr lst)
-;													(lambda (succ-lst rest)
-;														(succ (cons (car lst) succ-lst) rest))
-;													(lambda (fail-lst rest)
-;														(succ (list (car lst)) (cons fail-lst rest) ))))
-;							(else (f 	pred
-;										(cdr lst)
-;										(lambda (succ-lst rest)
-;											(fail (list (car lst)) (cons succ-lst rest) ))
-;										(lambda (fail-lst rest)
-;											(fail (cons (car lst) fail-lst ) rest ))))))))
-;	(f 	pred
-;		lst
-;		(lambda (succ-lst rest)
-;			(cons succ-lst rest))
-;		(lambda (fail-lst rest)
-;			(cons `() (cons fail-lst rest))))))
+(define list-of-strings?
+	(lambda (x)
+		(and (list? x)(andmap string? x))))
+
+(define (split-list-by-pred pred lst)
+	(letrec ((f (lambda(pred lst succ fail)
+					(cond 	((null? lst) (succ `() `()))
+							((pred (car lst)) (f 	pred
+													(cdr lst)
+													(lambda (succ-lst rest)
+														(succ (cons (car lst) succ-lst) rest))
+													(lambda (x rest)
+														(succ (list (car lst)) (cons x rest) ))))
+							(else (f 	pred
+										(cdr lst)
+										(lambda (succ-lst rest)
+											(fail (car lst) (cons succ-lst rest) ))
+										(lambda (x rest)
+											(fail (car lst) (cons x rest) ))))))))
+	(filter (lambda (x) (not (null? x)))
+			(f 	pred
+				lst
+				(lambda (succ-lst rest)
+					(cons succ-lst rest))
+				(lambda (x rest)
+					(cons `() (cons x rest)))))))
