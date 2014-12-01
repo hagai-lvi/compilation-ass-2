@@ -103,6 +103,14 @@
 							; `(string-append ,@folded-expressions)))))
 							(append-strings (filter (lambda (x) (not (null? x))) (split-list-by-pred string? folded-expressions)))))))
 			(pattern-rule
+				`(append . ,(? 'expressions))
+				(lambda (expressions)
+					(let ((folded-expressions (map fold expressions)))
+						(if	(andmap (lambda (x) (and (list? x) (value? x))) folded-expressions)
+							(begin (display 1) (apply append (map (lambda (x) (cadr x)) folded-expressions)))
+							(begin (display 2) `(append ,@folded-expressions)))
+						)))
+			(pattern-rule
 				(? 'any-exp)
 				id)
 		)))
