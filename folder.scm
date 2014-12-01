@@ -94,7 +94,8 @@
 			(lambda(q vars)
 				 `(quote ,vars)))
 			(pattern-rule
-			`(cons . ,(? `vars (lambda(vars)(andmap (lambda (x)(not (or (^const? x)(quote? x))))vars))))
+
+			`(cons . ,(? `vars (lambda(vars)(ormap (lambda (x)(not (or (^const? x)(quote? x))))vars))))
 			(lambda(vars)
 				`(cons ,@vars)))
 			
@@ -161,7 +162,8 @@
             		
                    ((pair? exp) 
                    	(cond 
-                   		((quote? (car exp))(caadr exp))
+                   		((quote? (car exp))(let ((value (caadr exp)))
+                   			(if (const? value) value `'(,@value))))
                    	 	((equal? (car exp) 'cons)(cadr exp))
                    	 	((equal? (car exp) 'list)(cadr exp))
                    	 	((equal?(car exp) 'append)(cadr exp))
@@ -186,7 +188,8 @@
             		
                    ((pair? exp) 
                    	(cond 
-                   		((quote? (car exp))(cdadr exp))
+                   		((quote? (car exp))(let ((value (cdadr exp)))
+                   			(if (const? value) value `'(,@value))))
                    	 	((equal? (car exp) 'cons)(caddr exp))
                    	 	((equal? (car exp) 'list)(caddr exp))
                    	 	((equal?(car exp) 'append)(caddr exp))
