@@ -16,7 +16,7 @@
 ; 		Done: number?, string?, string-append, sub1, zero?, null?
 
 
-
+(define (id x)x)
 (define quote? 
 	(trace-lambda qq(e)
  (or (eq? e 'quote)(and (pair? e)(eq? (car e) 'quote)))))
@@ -34,6 +34,19 @@
    		(op exp))))
    	(if(equal? (car exp) 'cons)
    	(car (op (cdr exp)))exp2))))
+
+
+(define const? (lambda(x)(or (^const? x)(quote? x))))
+
+(define n-const? (lambda(x)(not(or (^const? x)(quote? x)))))
+
+
+
+(define (super-map-fold vars)
+	(map (lambda(x)(let ((exp (fold x)))
+						 (if (quote? exp )(cadr exp) exp))) vars))
+
+
 
 (define fold
 	(let ((run
@@ -90,93 +103,190 @@
 				(trace-lambda a(first  second)
 				`'(,(cadr (fold first)),@(cadr (fold second)))))
 
+
+			(pattern-rule
+			`(cons  ,(? `first ) ,(? 'quote quote?) ) 
+				(trace-lambda a(first  second)
+				`'(,(fold first),@(cadr (fold second)))))
+
+			
+			(pattern-rule
+			`(cons  ,(? `first quote?) ,(? 'quote )) 
+				(trace-lambda a(first  second)
+				`'(,(cadr (fold first)),@(fold second))))			
+
+			(pattern-rule
+			`(cons  ,(? `first ) ,(? 'quote ?) ) 
+				(trace-lambda a(first  second)
+				`'(,(fold first),@(fold second))))
+
+
+			(pattern-rule
+			`(list . ,(? `vars (lambda(vars)(andmap (lambda(x)(not (or (^const? x)(quote? x))))vars))))
+			(lambda(vars)
+				`(list ,@vars)))
+			
+			
+			(pattern-rule
+			`(list . ,(? `first (lambda(vars)(andmap (lambda(x)(const? x))vars)))) 
+				(lambda(vars)
+				`'(,@(super-map-fold vars))))
+			; (pattern-rule
+			; `(list  ,(? `first ) ,(? 'quote quote?) ) 
+			; 	(trace-lambda a(first  second)
+			; 	`'(,(fold first),@(cadr (fold second)))))
+
+			
+			; (pattern-rule
+			; `(cons  ,(? `first quote?) ,(? 'quote )) 
+			; 	(trace-lambda a(first  second)
+			; 	`'(,(cadr (fold first)),@(fold second))))			
+
+			; (pattern-rule
+			; `(cons  ,(? `first ) ,(? 'quote ?) ) 
+			; 	(trace-lambda a(first  second)
+			; 	`'(,(fold first),@(fold second))))
+
+
+
+ (pattern-rule  `(car ,(? 'arg list?)  )
+             (lambda(arg)(let ((exp (fold arg) ))
+                 (cond
+                   ( (and (pair? exp) (equal? (car exp) 'car)) `(caar ,@(cdr exp)))
+                   ( (and (pair? exp) (equal? (car exp) 'cdr)) `(cadr ,@(cdr exp)))
+                   ( (and (pair? exp) (equal? (car exp) 'caar)) `(caaar ,@(cdr exp)))
+                   ( (and (pair? exp) (equal? (car exp) 'cddr)) `(caddr ,@(cdr exp)))
+                   ( (and (pair? exp) (equal? (car exp) 'cdar)) `(cadar ,@(cdr exp)))
+                   ( (and (pair? exp) (equal? (car exp) 'cadr)) `(caadr ,@(cdr exp)))
+            		
+                   ((pair? exp) 
+                   	(cond 
+                   		((quote? (car exp))(caadr exp))
+                   	 	((equal? (car exp) 'cons)(cadr exp))
+                   	 	((equal? (car exp) 'list)(cadr exp))
+                   	 	((equal?(car exp) 'append)(cadr exp))
+                   	 	(else `(car ,exp)))
+                   )
+                   (else `(car ,exp )))
+                 )
+             )) 
+
+
+ (pattern-rule
+           `(cdr ,(? 'arg list?)  )
+             (lambda(arg)
+               (let ((exp (fold arg) ))
+                 (cond
+                   ( (and (pair? exp) (equal? (car exp) 'car)) `(cadr ,@(cdr exp)))
+                   ( (and (pair? exp) (equal? (car exp) 'cdr)) `(cddr ,@(cdr exp)))
+                   ( (and (pair? exp) (equal? (car exp) 'caar)) `(cdaar ,@(cdr exp)))
+                   ( (and (pair? exp) (equal? (car exp) 'cddr)) `(cdddr ,@(cdr exp)))
+                   ( (and (pair? exp) (equal? (car exp) 'cadr)) `(cdadr ,@(cdr exp)))
+                   ( (and (pair? exp) (equal? (car exp) 'cdar)) `(cddar ,@(cdr exp)))
+            		
+                   ((pair? exp) 
+                   	(cond 
+                   		((quote? (car exp))(cdadr exp))
+                   	 	((equal? (car exp) 'cons)(caddr exp))
+                   	 	((equal? (car exp) 'list)(caddr exp))
+                   	 	((equal?(car exp) 'append)(caddr exp))
+                   	 	(else `(cdr ,exp)))
+                    
+                   )
+                   (else `(cdr ,exp )))
+                 )
+             )) 
+
+
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;		
- (pattern-rule
-   `(car (car (car (car ,(? 'expr ^var?)))))
-   (lambda (expr) `(caaaar ,expr)))
- (pattern-rule
-   `(car (car (car (cdr ,(? 'expr ^var?)))))
-   (lambda (expr) `(caaadr ,expr)))
- (pattern-rule
-   `(car (car (cdr (car ,(? 'expr ^var?)))))
-   (lambda (expr) `(caadar ,expr)))
- (pattern-rule
-   `(car (car (cdr (cdr ,(? 'expr ^var?)))))
-   (lambda (expr) `(caaddr ,expr)))
- (pattern-rule
-   `(car (cdr (car (car ,(? 'expr ^var?)))))
-   (lambda (expr) `(cadaar ,expr)))
- (pattern-rule
-   `(car (cdr (car (cdr ,(? 'expr ^var?)))))
-   (lambda (expr) `(cadadr ,expr)))
- (pattern-rule
-   `(car (cdr (cdr (car ,(? 'expr ^var?)))))
-   (lambda (expr) `(caddar ,expr)))
- (pattern-rule
-   `(car (cdr (cdr (cdr ,(? 'expr ^var?)))))
-   (lambda (expr) `(cadddr ,expr)))
- (pattern-rule
-   `(cdr (car (car (car ,(? 'expr ^var?)))))
-   (lambda (expr) `(cdaaar ,expr)))
- (pattern-rule
-   `(cdr (car (car (cdr ,(? 'expr ^var?)))))
-   (lambda (expr) `(cdaadr ,expr)))
- (pattern-rule
-   `(cdr (car (cdr (car ,(? 'expr ^var?)))))
-   (lambda (expr) `(cdadar ,expr)))
- (pattern-rule
-   `(cdr (car (cdr (cdr ,(? 'expr ^var?)))))
-   (lambda (expr) `(cdaddr ,expr)))
- (pattern-rule
-   `(cdr (cdr (car (car ,(? 'expr ^var?)))))
-   (lambda (expr) `(cddaar ,expr)))
- (pattern-rule
-   `(cdr (cdr (car (cdr ,(? 'expr ^var?)))))
-   (lambda (expr) `(cddadr ,expr)))
- (pattern-rule
-   `(cdr (cdr (cdr (car ,(? 'expr ^var?)))))
-   (lambda (expr) `(cdddar ,expr)))
- (pattern-rule
-   `(cdr (cdr (cdr (cdr ,(? 'expr ^var?)))))
-   (lambda (expr) `(cddddr ,expr)))
-(pattern-rule
-   `(car (car (car ,(? 'expr ^var?))))
-   (lambda (expr) `(caaar ,expr)))
- (pattern-rule
-   `(car (car (cdr ,(? 'expr ^var?))))
-   (lambda (expr) `(caadr ,expr)))
- (pattern-rule
-   `(car (cdr (car ,(? 'expr ^var?))))
-   (lambda (expr) `(cadar ,expr)))
- (pattern-rule
-   `(car (cdr (cdr ,(? 'expr ^var?))))
-   (lambda (expr) `(caddr ,expr)))
- (pattern-rule
-   `(cdr (car (car ,(? 'expr ^var?))))
-   (lambda (expr) `(cdaar ,expr)))
- (pattern-rule
-   `(cdr (car (cdr ,(? 'expr ^var?))))
-   (lambda (expr) `(cdadr ,expr)))
- (pattern-rule
-   `(cdr (cdr (car ,(? 'expr ^var?))))
-   (lambda (expr) `(cddar ,expr)))
- (pattern-rule
-   `(cdr (cdr (cdr ,(? 'expr ^var?))))
-   (lambda (expr) `(cdddr ,expr)))
- 	 (pattern-rule
-   `(car (car ,(? 'expr ^var?)))
-   (lambda (expr) `(caar ,expr)))
- (pattern-rule
-   `(car (cdr ,(? 'expr ^var?)))
-   (lambda (expr) `(cadr ,expr)))
- (pattern-rule
-   `(cdr (car ,(? 'expr ^var?)))
-   (lambda (expr) `(cdar ,expr)))
- (pattern-rule
-   `(cdr (cdr ,(? 'expr ^var?)))
-   (lambda (expr) `(cddr ,expr)))
+;  (pattern-rule
+;    `(car (car (car (car ,(? 'expr ^var?)))))
+;    (lambda (expr) `(caaaar ,expr)))
+;  (pattern-rule
+;    `(car (car (car (cdr ,(? 'expr ^var?)))))
+;    (lambda (expr) `(caaadr ,expr)))
+;  (pattern-rule
+;    `(car (car (cdr (car ,(? 'expr ^var?)))))
+;    (lambda (expr) `(caadar ,expr)))
+;  (pattern-rule
+;    `(car (car (cdr (cdr ,(? 'expr ^var?)))))
+;    (lambda (expr) `(caaddr ,expr)))
+;  (pattern-rule
+;    `(car (cdr (car (car ,(? 'expr ^var?)))))
+;    (lambda (expr) `(cadaar ,expr)))
+;  (pattern-rule
+;    `(car (cdr (car (cdr ,(? 'expr ^var?)))))
+;    (lambda (expr) `(cadadr ,expr)))
+;  (pattern-rule
+;    `(car (cdr (cdr (car ,(? 'expr ^var?)))))
+;    (lambda (expr) `(caddar ,expr)))
+;  (pattern-rule
+;    `(car (cdr (cdr (cdr ,(? 'expr ^var?)))))
+;    (lambda (expr) `(cadddr ,expr)))
+;  (pattern-rule
+;    `(cdr (car (car (car ,(? 'expr ^var?)))))
+;    (lambda (expr) `(cdaaar ,expr)))
+;  (pattern-rule
+;    `(cdr (car (car (cdr ,(? 'expr ^var?)))))
+;    (lambda (expr) `(cdaadr ,expr)))
+;  (pattern-rule
+;    `(cdr (car (cdr (car ,(? 'expr ^var?)))))
+;    (lambda (expr) `(cdadar ,expr)))
+;  (pattern-rule
+;    `(cdr (car (cdr (cdr ,(? 'expr ^var?)))))
+;    (lambda (expr) `(cdaddr ,expr)))
+;  (pattern-rule
+;    `(cdr (cdr (car (car ,(? 'expr ^var?)))))
+;    (lambda (expr) `(cddaar ,expr)))
+;  (pattern-rule
+;    `(cdr (cdr (car (cdr ,(? 'expr ^var?)))))
+;    (lambda (expr) `(cddadr ,expr)))
+;  (pattern-rule
+;    `(cdr (cdr (cdr (car ,(? 'expr ^var?)))))
+;    (lambda (expr) `(cdddar ,expr)))
+;  (pattern-rule
+;    `(cdr (cdr (cdr (cdr ,(? 'expr ^var?)))))
+;    (lambda (expr) `(cddddr ,expr)))
+; (pattern-rule
+;    `(car (car (car ,(? 'expr ^var?))))
+;    (lambda (expr) `(caaar ,expr)))
+;  (pattern-rule
+;    `(car (car (cdr ,(? 'expr ^var?))))
+;    (lambda (expr) `(caadr ,expr)))
+;  (pattern-rule
+;    `(car (cdr (car ,(? 'expr ^var?))))
+;    (lambda (expr) `(cadar ,expr)))
+;  (pattern-rule
+;    `(car (cdr (cdr ,(? 'expr ^var?))))
+;    (lambda (expr) `(caddr ,expr)))
+;  (pattern-rule
+;    `(cdr (car (car ,(? 'expr ^var?))))
+;    (lambda (expr) `(cdaar ,expr)))
+;  (pattern-rule
+;    `(cdr (car (cdr ,(? 'expr ^var?))))
+;    (lambda (expr) `(cdadr ,expr)))
+;  (pattern-rule
+;    `(cdr (cdr (car ,(? 'expr ^var?))))
+;    (lambda (expr) `(cddar ,expr)))
+;  (pattern-rule
+;    `(cdr (cdr (cdr ,(? 'expr ^var?))))
+;    (lambda (expr) `(cdddr ,expr)))
+;  	 (pattern-rule
+;    `(car (car ,(? 'expr ^var?)))
+;    (lambda (expr) `(caar ,expr)))
+;  (pattern-rule
+;    `(car (cdr ,(? 'expr ^var?)))
+;    (lambda (expr) `(cadr ,expr)))
+;  (pattern-rule
+;    `(cdr (car ,(? 'expr ^var?)))
+;    (lambda (expr) `(cdar ,expr)))
+;  (pattern-rule
+;    `(cdr (cdr ,(? 'expr ^var?)))
+;    (lambda (expr) `(cddr ,expr)))
  
   
+
+
 ;;;;;;;;;;;;;;;;;;;;;
   (pattern-rule
    `(car (car (car (car ,(? 'expr-app list?)))))
@@ -377,7 +487,7 @@
 		(and (list? x)(andmap string? x))))
 
 (define (split-list-by-pred pred lst)
-	(letrec ((f (lambda(pred lst succ fail)
+	(letexp ((f (lambda(pred lst succ fail)
 					(cond 	((null? lst) (succ `() `()))
 							((pred (car lst)) (f 	pred
 													(cdr lst)
