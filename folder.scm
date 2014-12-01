@@ -147,7 +147,11 @@
 (define (value? x)
 	(or	(number? x)
 		(boolean? x)
-		(string? x)))
+		(string? x)
+		(char? x)
+		(and (list? x) (andmap (lambda (x) (value? x) )))
+		(and (pair? x) (value? (car x)) (value? (cdr x)) )
+		))
 
 (define (id-variadic . lst) lst)
 
