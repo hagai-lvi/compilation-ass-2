@@ -123,6 +123,8 @@
 		(assert-equal? (fold `(if #t b c)) `b )
 		(assert-equal? (fold `(if #f b c)) `c )
 		(assert-equal? (fold `(if (add1 1) (+ 3 4) c)) 7 )
+		(assert-equal? (fold `(if (car `(#t #f)) 1 2)) 1)
+		(assert-equal? (fold `(if (cadr `(#t #f)) 1 2)) 2)
 	)
 )
 
