@@ -138,7 +138,7 @@
 )
 
 (exit (+ (run-test-suites
-							;parse-tests
-							;compiler-tests
+							parse-tests
+							compiler-tests
 							folder-tests
 						)))
