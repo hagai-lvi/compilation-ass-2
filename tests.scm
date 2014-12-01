@@ -85,7 +85,7 @@
 		(assert-equal?  (fold `(number? 1)) #t )
 		(assert-equal?  (fold `(number? '1)) #f)
 		(assert-equal?  (fold `(number? (car '(1 a)))) #t )
-		(assert-equal?  (fold `(number? (cadr '(1 a)))) #f )
+		(assert-equal?  (fold `(number? (car (cdr '(1 a))))) #f )
 	)
 
 	(define-test test-fold-null?
@@ -98,9 +98,10 @@
 	(define-test test-fold-zero?
 		(assert-equal? (fold `(zero? 0)) #t )
 		(assert-equal? (fold `(zero? (sub1 1))) #t )
-		(assert-equal? (fold `(zero? 'a)) #f )
-		(assert-equal? (fold `(zero? "a")) #f )
-		(assert-equal? (fold `(zero? (car '(1 a)) )) #t )
+		(assert-equal? (fold `(zero? 'a)) `(zero? 'a) )
+		(assert-equal? (fold `(zero? "a")) `(zero? "a") )
+		(assert-equal? (fold `(zero? (car '(1 a)) )) #f )
+		(assert-equal? (fold `(zero? (car '(0 a)) )) #f )
 	)
 
 	(define-test test-fold-string?
@@ -136,4 +137,8 @@
 	)
 )
 
-(exit (+ (run-test-suites parse-tests compiler-tests folder-tests)))
+(exit (+ (run-test-suites
+							parse-tests
+							compiler-tests
+							folder-tests
+						)))
