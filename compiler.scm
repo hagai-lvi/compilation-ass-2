@@ -90,7 +90,7 @@
 	   (null? (cddr e))))))
 
 (define quasiquote? 
-	(trace-lambda qq(e)
+	(lambda (e)
  (eq? e 'quasiquote)))
 
 (define unquote? (^quote? 'unquote))
@@ -144,11 +144,11 @@
 	     `(define (var ,vari) ,(parse ex))))
 	  	(pattern-rule
 	  	`(define (,(? 'name) . ,(? 'varb)) ,(? 'exp))
-	  	(trace-lambda define(first rest exp)
+	  	(lambda (first rest exp)
 	  		`(define (var ,first) ,(parse `(lambda ,rest ,exp)))))
 	  (pattern-rule
 	  	`(define (,(? 'name) . ,(? 'varb)) ,(? 'exp))
-	  	(trace-lambda define(first rest exp)
+	  	(lambda (first rest exp)
 	  		`(define (var ,first) ,(parse `(lambda ,rest ,exp)))))
 	   (pattern-rule
 	   `(begin)
@@ -174,7 +174,7 @@
 	  (pattern-rule 	;let*
 			`(let* ,(? let-vars-expressions-list?) . ,(? 'body))
 			(lambda (exp-list body)
-				(parse (letstar exp-list  `(,@body)))))
+				(parse (expand-letstar exp-list  `(,@body)))))
 	  
 	    (pattern-rule 	;let*
 			`(and)
@@ -215,22 +215,13 @@
 				(error 'parse
 				(format "I can't recognize this: ~s" e)))))))
 
-(define letstar (trace-lambda letstar (exp-list body)
+(define expand-letstar (lambda (exp-list body)
 	(if (= (length exp-list) 0)
 	    body
 	    (let*( 	(seperated-exp-list (seperate-last-element exp-list))
 				(last (cdr seperated-exp-list))
 				(rest (car seperated-exp-list)))
-		(letstar rest `((lambda (,(car last)) ,body ) ,(cadr last)))
-	))))
-
-(define letstar-new (trace-lambda letstar (exp-list body)
-	(if (= (length exp-list) 0)
-	    body
-	    (let*( 	(seperated-exp-list (seperate-last-element exp-list))
-				(last (cdr seperated-exp-list))
-				(rest (car seperated-exp-list)))
-		(letstar-new rest `((lambda (,(car last)) ,body ) ,(cadr last)))
+		(expand-letstar rest `((lambda (,(car last)) ,body ) ,(cadr last)))
 	))))
 
 (define (expand-cond cond-list)
