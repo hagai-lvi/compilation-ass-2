@@ -494,7 +494,7 @@
 		(boolean? x)
 		(string? x)
 		(char? x)
-		(and (list? x) (andmap (lambda (x) (value? x) )))
+		(and (list? x) (andmap (lambda (x) (value? x) ) x))
 		(and (pair? x) (value? (car x)) (value? (cdr x)) )
 		))
 
