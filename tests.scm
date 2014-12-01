@@ -117,6 +117,13 @@
 		(assert-equal? (fold `(string-append))  "")
 		(assert-equal? (fold `(string-append "a" (string-append "b" "c")))  "abc")
 	)
+
+	(define-test test-fold-if
+		(assert-equal? (fold `(if a b c)) `(if a b c) )
+		(assert-equal? (fold `(if #t b c)) `b )
+		(assert-equal? (fold `(if #f b c)) `c )
+		(assert-equal? (fold `(if (add1 1) (+ 3 4) c)) 7 )
+	)
 )
 
 (exit (+ (run-test-suites parse-tests compiler-tests folder-tests)))
