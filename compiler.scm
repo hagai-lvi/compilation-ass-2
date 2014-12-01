@@ -1,6 +1,5 @@
 (load "pattern-matcher.scm")
 (print-gensym #f)
-(define (id x) x)
 ;;;;;;;;;;;
 ;; const ;;
 ;;;;;;;;;;;
@@ -91,7 +90,7 @@
 	   (null? (cddr e))))))
 
 (define quasiquote? 
-	(lambda (e)
+	(trace-lambda qq(e)
  (eq? e 'quasiquote)))
 
 (define unquote? (^quote? 'unquote))
@@ -122,113 +121,129 @@
 			`(lambda ,(? `var ^var?) . ,(? `body))	;TODO need to check if the body is legal (also in opt and regular lambdas)
 			(lambda (args body)
 				`(lambda-variadic ,args ,(parse `(begin ,@body)) )))
-		(pattern-rule 	;opt-lambda
+
+				(pattern-rule 	;opt-lambda
 			`(lambda ,(? 'opt-arg-list improper-list?) . ,(? 'body))
 			(lambda (opt-arg-list body)
 				(let* ( 	(args-list (opt-lambda-args-list opt-arg-list (lambda (x) x)))
 							(mandatory-args (get-opt-lambda-mandatory-args args-list))
 							(optional-arg (get-opt-lambda-optional-args args-list)))
 					`(lambda-opt ,mandatory-args ,optional-arg ,(parse `(begin ,@body))))))
-		(pattern-rule 	;letrec
+	  (pattern-rule 	;letrec
 			`(letrec ,(? let-vars-expressions-list?) . ,(? 'body))
 			(lambda (exp-list body)
 				(parse (expand-letrec `(letrec ,exp-list ,@body) ))))
-		(pattern-rule 	;reg-lambda
+
+	(pattern-rule 	;reg-lambda
 			`(lambda ,(? 'arg-list ^reg-lambda-args-list?) . ,(? 'body))
 			(lambda (arg-list body) `(lambda-simple ,arg-list ,(parse `(begin ,@body)))))
+
 	   (pattern-rule
-			`(define ,(? 'var ^var?) ,(? 'ex) )
-			(lambda (vari ex)
-				`(define (var ,vari) ,(parse ex))))
+	   `(define ,(? 'var ^var?) ,(? 'ex) )
+	   (lambda (vari ex)
+	     `(define (var ,vari) ,(parse ex))))
 	  	(pattern-rule
-			`(define (,(? 'name) . ,(? 'varb)) ,(? 'exp))
-			(lambda (first rest exp)
-				`(define (var ,first) ,(parse `(lambda ,rest ,exp)))))
-		(pattern-rule
-			`(define (,(? 'name) . ,(? 'varb)) ,(? 'exp))
-			(lambda (first rest exp)
-				`(define (var ,first) ,(parse `(lambda ,rest ,exp)))))
-		(pattern-rule
-			`(begin)
-			(lambda()
-				`(const ,*void-object*)))
-		(pattern-rule
-			`(begin ,(? `rest))
-			(lambda(rest)
-				(parse rest)))
-		(pattern-rule
-			`(begin . ,(? `rest))
-			(lambda(rest)
-				`(seq ,(map (lambda(exp)(parse exp))  rest))))
-		(pattern-rule
-			`(,(? 'a quasiquote?) . ,(? `rest))
-			(lambda(first rest)
-				(expand-qq (car rest))))
-		(pattern-rule
-			`(let ,(? 'va ) . ,(? 'body))
-			(lambda(vars body)
-				(parse `((lambda ,(get-lambda-variables vars) ,@body) ,@(get-lambda-arguments vars)))))
-		(pattern-rule 	;let*
-			`(let* ,(? let-vars-expressions-list?) ,(? 'body1) . ,(? 'body-rest))
-			(lambda (exp-list body1 body-rest)
-				(parse (expand-letstar exp-list body1 body-rest ))))
-		(pattern-rule 	;and
+	  	`(define (,(? 'name) . ,(? 'varb)) ,(? 'exp))
+	  	(trace-lambda define(first rest exp)
+	  		`(define (var ,first) ,(parse `(lambda ,rest ,exp)))))
+	  (pattern-rule
+	  	`(define (,(? 'name) . ,(? 'varb)) ,(? 'exp))
+	  	(trace-lambda define(first rest exp)
+	  		`(define (var ,first) ,(parse `(lambda ,rest ,exp)))))
+	   (pattern-rule
+	   `(begin)
+	   (lambda()
+	     `(const ,*void-object*)))
+	   (pattern-rule
+	   `(begin ,(? `rest))
+	   (lambda(rest)
+	     (parse rest)))
+	  (pattern-rule
+	   `(begin . ,(? `rest))
+	   (lambda(rest)
+	     `(seq ,(map (lambda(exp)(parse exp))  rest))))
+	  (pattern-rule
+	   `(,(? 'a quasiquote?) . ,(? `rest))
+	   (lambda(first rest)
+	     (expand-qq (car rest))))
+	  (pattern-rule
+	   `(let ,(? 'va ) . ,(? 'body))
+	   (lambda(vars body)
+	     (parse `((lambda ,(get-lambda-variables vars) ,@body) ,@(get-lambda-arguments vars)))))
+	  
+	  (pattern-rule 	;let*
+			`(let* ,(? let-vars-expressions-list?) . ,(? 'body))
+			(lambda (exp-list body)
+				(parse (letstar exp-list  `(,@body)))))
+	  
+	    (pattern-rule 	;let*
 			`(and)
 			(lambda ()
 			`(const #t)))
-		(pattern-rule
-			`(and ,(? 'first))
+	    (pattern-rule
+	    	`(and ,(? 'first))
 			(lambda (first)
 				(parse first)))
-		(pattern-rule 	;and
+	  (pattern-rule 	;let*
 			`(and ,(? 'first) ,(? 'second))
 			(lambda (first second)
-				(parse `(if ,first ,second #f))))
-		(pattern-rule 	;and
+			(parse `(if ,first ,second #f))))
+	  (pattern-rule 	;let*
 			`(and ,(? 'first) . ,(? 'rest))
 			(lambda (first rest)
-				(parse `(if ,first (and ,@rest) #f))))
-		(pattern-rule
-			`(,(? 'va  ^var?) . ,(? 'varb list?))
-			(lambda (vari variables)
-				`(applic (var ,vari) ,(map (lambda (s)(parse s)) variables ))))
-		(pattern-rule
-			`(,(? 'va list?) . ,(? 'va2 list?))
-			(lambda (first rest)
-				`(applic ,(parse first) ,(map (lambda (exp)(parse exp)) rest))))
-		(pattern-rule
-			`(let ,(? 'va ) ,(? 'body))
-			(lambda (vars body)
-				(parse  `((lambda ,(get-lambda-variables vars) ,body) ,@(get-lambda-arguments vars)))))
-		(pattern-rule
-			`(cond . ,(? 'cond-list)) ; TODO add identifier for cond list
-			(lambda (cond-list) (parse (expand-cond cond-list))))
-	)))
+			(parse `(if ,first (and ,@rest) #f))))
+ (pattern-rule
+	   `(,(? 'va  ^var?) . ,(? 'varb list?))
+	   (lambda(vari variables)
+	     `(applic (var ,vari) ,(map (lambda(s)(parse s)) variables ))))
+	  (pattern-rule
+	   `(,(? 'va list?) . ,(? 'va2 list?))
+	   (lambda(first rest)
+	     `(applic ,(parse first) ,(map (lambda(exp)(parse exp)) rest))))
+		  (pattern-rule
+	   `(let ,(? 'va ) ,(? 'body))
+	   (lambda(vars body)
+	     (parse  `((lambda ,(get-lambda-variables vars) ,body) ,@(get-lambda-arguments vars)))))
+	  (pattern-rule
+	  	`(cond . ,(? 'cond-list)) ; TODO add identifier for cond list
+		(lambda (cond-list) (parse (expand-cond `(,@cond-list))))
+		)
+		)))
 	(lambda (e)
 		(run e
 			(lambda ()
 				(error 'parse
 				(format "I can't recognize this: ~s" e)))))))
 
-(define expand-letstar (lambda (exp-list body1 body-rest)
+(define letstar (trace-lambda letstar (exp-list body)
 	(if (= (length exp-list) 0)
-	    (apply beginify `(,body1 ,@body-rest))
+	    body
 	    (let*( 	(seperated-exp-list (seperate-last-element exp-list))
 				(last (cdr seperated-exp-list))
 				(rest (car seperated-exp-list)))
-		(expand-letstar rest `((lambda (,(car last)) ,(apply beginify `(,body1 ,@body-rest)) ) ,(cadr last)) `())
+		(letstar rest `((lambda (,(car last)) ,body ) ,(cadr last)))
+	))))
+
+(define letstar-new (trace-lambda letstar (exp-list body)
+	(if (= (length exp-list) 0)
+	    body
+	    (let*( 	(seperated-exp-list (seperate-last-element exp-list))
+				(last (cdr seperated-exp-list))
+				(rest (car seperated-exp-list)))
+		(letstar-new rest `((lambda (,(car last)) ,body ) ,(cadr last)))
 	))))
 
 (define (expand-cond cond-list)
 	(letrec ((f (lambda (cond-list succ)
 					(cond 	((null? cond-list) (succ cond-list))
-							((and (eqv? `else (caar cond-list)) (null? (cdr cond-list)) ) (succ `(begin ,@(cdar cond-list)))) ; TODO handle else
+							((and (eqv? `else (caar cond-list)) (null? (cdr cond-list)) ) (succ (cadar cond-list))) ; TODO handle else
 							((and (eqv? `else (caar cond-list)) (not (null? (cdr cond-list))) ) (error `expand-cond (format "else clause must be the last in a cond expression."))) ; TODO ERROR
 							(else 	(f 	(cdr cond-list)
 										(lambda (rest)
 											(if 	(null? rest)
-													(succ `(if ,(caar cond-list) (begin ,@(cdar cond-list)) ))
-													(succ `(if ,(caar cond-list) (begin ,@(cdar cond-list)) ,rest))))))))))
+							
+													(succ `(if ,(caar cond-list) ,(cadar cond-list) ))
+													(succ `(if ,(caar cond-list) ,(cadar cond-list) (begin ,rest)))))))))))
 		(f cond-list (lambda (x) x))))
 
 (define Ym
@@ -274,7 +289,3 @@
 					    					(succ (cons (car list) rest) last)))))))
 	(f list (lambda (x y) (cons x y)))))
 
-(define (beginify exp1 . lst)
-	(if (and (list? lst) (> (length lst) 0))
-	    `(begin ,exp1 ,@lst)
-	    exp1))
