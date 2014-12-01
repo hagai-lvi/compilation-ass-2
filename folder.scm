@@ -397,9 +397,9 @@
 				`(zero? ,(? `exp))
 				(lambda (exp)
 					(let ((e (fold exp)))
-						(if	(value? exp)
-							(zero? exp)
-							`(zero? ,exp )))))
+						(if	(value? e)
+							(zero? e)
+							`(zero? ,e )))))
 			(pattern-rule
 				`(null? ,(? `exp))
 				(lambda (exp)
