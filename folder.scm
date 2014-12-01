@@ -415,6 +415,23 @@
 							(string? e)
 							`(string? ,e)))))
 			(pattern-rule
+				`(if ,(? 'pred) ,(? 'dit) )
+				(lambda (pred dit)
+					(let (	(pred-folded (fold pred))
+							(dit-folded (fold dit)))
+					(if (value? pred-folded)
+						(if pred-folded dit-folded) 
+						`(if ,pred-folded ,dit-folded )))))
+			(pattern-rule
+				`(if ,(? 'pred) ,(? 'dit) ,(? 'dif) )
+				(lambda (pred dit dif)
+					(let (	(pred-folded (fold pred))
+							(dit-folded (fold dit))
+							(dif-folded (fold dif)))
+					(if (value? pred-folded)
+						(if pred-folded dit-folded dif-folded) 
+						`(if ,pred-folded ,dit-folded ,dif-folded)))))
+			(pattern-rule
 				`(string-append . ,(? 'expressions))
 				(lambda (expressions)
 					(let ((folded-expressions (map fold expressions )))
@@ -427,7 +444,6 @@
 				id)
 		)))
 	(lambda (e)
-	
 			(run e
 			(lambda ()
 				(error 'parse
@@ -468,7 +484,11 @@
 (define (value? x)
 	(or	(number? x)
 		(boolean? x)
-		(string? x)))
+		(string? x)
+		(char? x)
+		(and (list? x) (andmap (lambda (x) (value? x) )))
+		(and (pair? x) (value? (car x)) (value? (cdr x)) )
+		))
 
 (define (id-variadic . lst) lst)
 

@@ -117,6 +117,23 @@
 		(assert-equal? (fold `(string-append))  "")
 		(assert-equal? (fold `(string-append "a" (string-append "b" "c")))  "abc")
 	)
+
+	(define-test test-fold-if
+		;;;;;; Tests for (if pred dit dif) ;;;;;;;
+		(assert-equal? (fold `(if a b c)) `(if a b c) )
+		(assert-equal? (fold `(if #t b c)) `b )
+		(assert-equal? (fold `(if #f b c)) `c )
+		(assert-equal? (fold `(if (add1 1) (+ 3 4) c)) 7 )
+		(assert-equal? (fold `(if (car `(#t #f)) 1 2)) 1)
+		(assert-equal? (fold `(if (cadr `(#t #f)) 1 2)) 2)
+		;;;;;; Tests for (if pred dit) ;;;;;;;
+		(assert-equal? (fold `(if a b)) `(if a b) )
+		(assert-equal? (fold `(if #t b )) `b )
+		(assert-equal? (fold `(if #f b )) *void-object* )
+		(assert-equal? (fold `(if (add1 1) (+ 3 4) )) 7 )
+		(assert-equal? (fold `(if (car `(#t #f)) 1 )) 1)
+		(assert-equal? (fold `(if (cadr `(#t #f)) 1 )) *void-object*)
+	)
 )
 
 (exit (+ (run-test-suites parse-tests compiler-tests folder-tests)))
