@@ -519,7 +519,7 @@
 		(and (list? x)(andmap string? x))))
 
 (define (split-list-by-pred pred lst)
-	(letexp ((f (lambda(pred lst succ fail)
+	(letrec ((f (lambda(pred lst succ fail)
 					(cond 	((null? lst) (succ `() `()))
 							((pred (car lst)) (f 	pred
 													(cdr lst)
