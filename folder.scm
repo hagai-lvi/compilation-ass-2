@@ -407,9 +407,9 @@
 				`(null? ,(? `exp))
 				(lambda (exp)
 					(let ((e (fold exp)))
-						(if	(value? e)
-							(null? e)
-							`(null? ,e)))))
+						(cond 	((value? e) (empty-list? e))
+								((cons-expression? e) #f) 	; we know that a cons expression can't be null
+								(else `(null? ,e))))))
 			(pattern-rule
 				`(string? ,(? exp))
 				(lambda (exp)
@@ -518,25 +518,38 @@
 	(lambda (x)
 		(and (list? x)(andmap string? x))))
 
+;group elements in the list according to pred
+; example (split-list-by-pred string? `(a b "c" "d" 1 2))
+; 				=> `((a b) ("c" "d") `(1 2))
 (define (split-list-by-pred pred lst)
 	(letrec ((f (lambda(pred lst succ fail)
 					(cond 	((null? lst) (succ `() `()))
 							((pred (car lst)) (f 	pred
 													(cdr lst)
-													(lambda (succ-lst rest)
+													(lambda (succ-lst rest);succ
 														(succ (cons (car lst) succ-lst) rest))
-													(lambda (x rest)
+													(lambda (x rest);fail
 														(succ (list (car lst)) (cons x rest) ))))
 							(else (f 	pred
 										(cdr lst)
-										(lambda (succ-lst rest)
+										(lambda (succ-lst rest);succ
 											(fail (car lst) (cons succ-lst rest) ))
-										(lambda (x rest)
+										(lambda (x rest);fail
 											(fail (car lst) (cons x rest) ))))))))
 	(filter (lambda (x) (not (null? x)))
 			(f 	pred
 				lst
-				(lambda (succ-lst rest)
+				(lambda (succ-lst rest);succ
 					(cons succ-lst rest))
-				(lambda (x rest)
+				(lambda (x rest);fail
 					(cons `() (cons x rest)))))))
+
+(define cons-expression?
+	(lambda (exp)
+		(and	(list? exp)
+				(equal? (car exp) 'cons))))
+
+(define empty-list?
+	(lambda (exp)
+		(or	(equal? exp '(list) )
+			(equal? exp ''() ))))
