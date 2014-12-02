@@ -142,6 +142,12 @@
 		(assert-equal? (fold '(list 1 2 3)) ''(1 2 3) )
 		(assert-equal? (fold '(list 1 x 3)) '(list 1 x 3) )
 	)
+
+	(define-test test-cars-and-cdrs
+		(assert-equal? (fold '(car (cdr '(1 2 3)))) 2)
+		(assert-equal? (fold '(car (cdr (list 1 2 3)))) 2)
+		(assert-equal? (fold '(car (cdr (cons 'a (cons 'b 'c))))) ''b)
+	)
 )
 
 (exit (+ (run-test-suites
