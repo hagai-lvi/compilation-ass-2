@@ -92,7 +92,8 @@
 		(assert-equal? (fold `(null? '())) #t )
 		(assert-equal? (fold `(null? (car (list '())))) #t )
 		(assert-equal? (fold `(null? '(1))) #f )
-		(assert-equal? (fold `(null? (car (list '(1))))) #f )
+		(assert-equal? (fold `(null? (car (list '(1) '(2) '(3) )))) #f )
+		(assert-equal? (fold `(null? (append '() '() ) )) #t )
 	)
 
 	(define-test test-fold-zero?
@@ -126,7 +127,7 @@
 		(assert-equal? (fold `(if #f b c)) 'c )
 		(assert-equal? (fold `(if (add1 1) (+ 3 4) c)) 7 )
 		(assert-equal? (fold `(if (car '(#t #f)) 1 2)) 1)
-		(assert-equal? (fold `(if (cadr '(#t #f)) 1 2)) 2)
+		(assert-equal? (fold `(if (car (cdr '(#t #f))) 1 2)) 2)
 		;;;;;; Tests for (if pred dit) ;;;;;;;
 		(assert-equal? (fold `(if a b)) '(if a b) )
 		(assert-equal? (fold `(if #t b )) 'b )
