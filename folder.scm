@@ -440,8 +440,7 @@
 					(let ((folded-expressions (map fold expressions )))
 						(if	(andmap string? folded-expressions)
 							(apply string-append folded-expressions)
-							; `(string-append ,@folded-expressions)))))
-							(append-strings (filter (lambda (x) (not (null? x))) (split-list-by-pred string? folded-expressions)))))))
+							(append-strings (split-list-by-pred string? folded-expressions))))))
 			(pattern-rule
 				`(append . ,(? 'expressions))
 				(lambda (expressions)
