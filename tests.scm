@@ -136,6 +136,18 @@
 		(assert-equal? (fold `(if (car '(#t #f)) 1 )) 1)
 		(assert-equal? (fold `(if (car ( cdr'(#t #f))) 1 )) *void-object*)
 	)
+
+	(define-test test-fold-list
+		(assert-equal? (fold '(list)) `() )
+		(assert-equal? (fold '(list 1 2 3)) ''(1 2 3) )
+		(assert-equal? (fold '(list 1 x 3)) '(list 1 x 3) )
+	)
+
+	(define-test test-cars-and-cdrs
+		(assert-equal? (fold '(car (cdr '(1 2 3)))) 2)
+		(assert-equal? (fold '(car (cdr (list 1 2 3)))) 2)
+		(assert-equal? (fold '(car (cdr (cons 'a (cons 'b 'c))))) ''b)
+	)
 )
 
 (exit (+ (run-test-suites
