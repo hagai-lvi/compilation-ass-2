@@ -44,9 +44,21 @@
 	(let ((e (car exp)))
 	(or(equal? e 'cons)(equal? e 'list)(equal? e 'append)))))
 
+(define (super-map-fold-cons x)
+	(let ((exp (fold x)))
+							(if (quote? exp )(cadr exp) exp)))
+
+
 (define (super-map-fold vars)
 	(map (lambda(x)(let ((exp (fold x)))
 							(if (quote? exp )(cadr exp) exp))) vars))
+
+(define (super-map-fold vars)
+	(map (lambda(x)(let ((exp (fold x)))
+							(if (quote? exp )(cadr exp) exp))) vars))
+(define (super-map-fold-in-constractor vars)
+	(map (lambda(x)(fold x))vars))
+						
 
 (define (super-map-fold-with-qoute vars)
 	(map (lambda(x)(fold x)) vars))
@@ -101,37 +113,34 @@
 				`(,(? 'quote quote?) . ,(? `vars))
 				(lambda(q vars)
 						`(quote ,vars)))
-			(pattern-rule
-				`(cons . ,(? `vars (lambda(vars)(ormap (lambda (x)(not (or (and (pair? x)(constactor? x))(^const? x)(quote? x))))vars))))
-				(lambda(vars)
-					`(cons ,@vars)))
-				
-					(pattern-rule
-				`(cons  ,(? `first (lambda(x)(or (quote? x)(and(pair? x)(constactor? x))))) ,(? 'quote (lambda(x)(or (quote? x)(and(pair? x)(constactor? x)))))) 
-					(lambda (first  second)
-					`'(,(cadr (fold first)),@(cadr (fold second)))))
+				(pattern-rule
+				`(cons . ,(? `first (lambda(vars)(andmap (lambda(x) (const? (fold x)))vars)))) 
+					(lambda(vars)
+					`'(,@(cons (super-map-fold-cons (car vars))(super-map-fold-cons (cadr vars))))))
 
-		
-			(pattern-rule
-				`(cons  ,(? `first ) ,(? 'quote (lambda(x)(or (quote? x)(and(pair? x)(constactor? x)))))) 
-					(lambda (first  second)
-					`'(,(fold first),@(cadr (fold second)))))			
-			(pattern-rule
-				`(cons  ,(? `first (lambda(x)(or (quote? x)(and(pair? x)(constactor? x))))) ,(? 'quote )) 
-					(lambda (first  second)
-					`'(,(cadr (fold first)),@(fold second))))			
-			(pattern-rule
-				`(cons  ,(? `first ) ,(? 'quote) ) 
-					(lambda (first  second)
-					`'(,(fold first),@(fold second))))
-			(pattern-rule
-				`(list . ,(? `first (lambda(vars)(andmap (lambda(x)(or (and (pair? x)(constactor? x))(const? x)))vars)))) 
+					(pattern-rule
+				`(cons . ,(? `vars (lambda(vars)(andmap (lambda(x)(not (or (^const? x)(quote? x))))vars))))
+				(lambda(vars)
+					`(cons ,@(super-map-fold-in-constractor vars))))
+				(pattern-rule
+				`(list . ,(? `first (lambda(vars)(andmap (lambda(x) (const? (fold x)))vars)))) 
 					(lambda(vars)
 					`'(,@(super-map-fold vars))))
 			(pattern-rule
-				`(list . ,(? `vars (lambda vars(vars)(andmap (lambda(x)(not (or (^const? x)(quote? x))))vars))))
+				`(list . ,(? `vars (lambda(vars)(andmap (lambda(x)(not (or (^const? x)(quote? x))))vars))))
 				(lambda(vars)
-					`(list ,@vars)))
+					`(list ,@(super-map-fold-in-constractor vars))))
+
+			(pattern-rule
+				`(append  ,(? 'var))
+				(lambda (var)
+					var))
+
+			(pattern-rule
+				`(append . ,(? 'expressions (lambda(vars)(andmap (lambda(x)(or (list? x)(const? x)))vars))))
+				(lambda (expressions)
+					`'(,@(apply append (super-map-splice expressions)))))
+						
 			(pattern-rule 
 				`(car ,(? 'arg list?)  )
 				(lambda(arg)(let ((exp (fold arg) ))
@@ -147,8 +156,12 @@
 								((quote? (car exp))(let ((value (caadr exp)))
 									(if (const? value) value `'(,@value))))
 								((equal? (car exp) 'cons)(cadr exp))
-								((equal? (car exp) 'list)(let ((e (cadr exp)))(if(pair? e)`(list ,e)e)))
-								((equal?(car exp) 'append)(let ((e (cadr exp)))(if(pair? e)`(list ,e)e)))
+								((equal? (car exp) 'list)(let ((e (cadr exp)))(cond ((quote? e) e) 
+																					((pair? e)`(list ,e))
+																					(else e))))
+								((equal?(car exp) 'append)(let ((e (cadr exp)))(cond ((quote? e) e) 
+																					((pair? e)`(list ,e))
+																					(else e))))
 								(else `(car ,exp))))
 						(else `(car ,exp ))))))
 			(pattern-rule
@@ -168,9 +181,11 @@
 										(if (const? value) value `'(,@value))))
 									((equal? (car exp) 'cons)(caddr exp))
 									((equal? (car exp) 'list)(let ((e (cddr exp)))
-										(if (pair? e)`(list ,@e) e)))
+										(cond ((quote? e) e)
+											 ((pair? e)`(list ,@e))(else  e))))
 									((equal?(car exp) 'append)(let ((e (cddr exp)))
-										(if (pair? e)`(list ,@e) e)))
+										(cond ((quote? e) e)
+											 ((pair? e)`(list ,@e))(else  e))))
 									(else `(cdr ,exp))))
 							(else `(cdr ,exp ))))))
 			(pattern-rule
@@ -324,16 +339,6 @@
 							(apply string-append folded-expressions)
 							(append-strings (split-list-by-pred string? folded-expressions))))))
 			
-			(pattern-rule
-				`(append  ,(? 'var))
-				(lambda (var)
-					var))
-
-			(pattern-rule
-				`(append . ,(? 'expressions (lambda(vars)(andmap (lambda(x)(or (list? x)(const? x)))vars))))
-				(lambda (expressions)
-					`'(,@(apply append (super-map-splice expressions)))))
-						
 			(pattern-rule
 				(? 'any-exp)
 				id)
