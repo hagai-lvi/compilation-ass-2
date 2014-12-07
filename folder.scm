@@ -129,7 +129,7 @@
 					(lambda(vars)
 					`'(,@(super-map-fold vars))))
 			(pattern-rule
-				`(list . ,(? `vars (lambda(vars)(andmap (lambda(x)(not (or (^const? x)(quote? x))))vars))))
+				`(list . ,(? `vars (lambda vars(vars)(andmap (lambda(x)(not (or (^const? x)(quote? x))))vars))))
 				(lambda(vars)
 					`(list ,@vars)))
 			(pattern-rule 
