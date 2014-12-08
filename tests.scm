@@ -138,7 +138,7 @@
 	)
 
 	(define-test test-fold-list
-		(assert-equal? (fold '(list)) `() )
+		(assert-equal? (fold '(list)) ''() )
 		(assert-equal? (fold '(list 1 2 3)) ''(1 2 3) )
 		(assert-equal? (fold '(list 1 x 3)) '(list 1 x 3) )
 	)
